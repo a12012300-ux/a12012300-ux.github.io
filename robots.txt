@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# 讓所有 AI 爬蟲可以索引（GEO 優化）
+User-agent: GPTBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+Sitemap: https://a12012300-ux.github.io/sitemap.xml

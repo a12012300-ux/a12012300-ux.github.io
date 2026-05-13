@@ -11,7 +11,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 import os
 import re
 import json
-import shutil
+import hashlib
 import glob
 from datetime import datetime
 from pathlib import Path
@@ -64,14 +64,6 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     keyword = summary.get('keyword', '寵物推薦')
     affiliate_url = summary.get('affiliate_url', 'https://shopee.tw')
 
-    page = template
-    page = page.replace('{{TITLE}}', title)
-    page = page.replace('{{DESCRIPTION}}', description)
-    page = page.replace('{{CONTENT}}', content)
-    page = page.replace('{{KEYWORD}}', KEYWORD_LABELS.get(keyword, keyword))
-    page = page.replace('{{AFFILIATE_URL}}', affiliate_url)
-
-    # 用流水號 + 關鍵字英文對照產生純英數檔名，GitHub Pages 不支援中文 URL
     KEYWORD_SLUG = {
         "貓砂":"cat-litter", "貓糧":"cat-food", "貓零食":"cat-snack",
         "貓咪罐頭":"cat-can", "貓抓板":"cat-scratcher", "貓窩":"cat-bed",
@@ -81,9 +73,23 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
         "寵物保健":"pet-health", "寵物碗":"pet-bowl", "自動餵食器":"auto-feeder",
     }
     kw_slug = KEYWORD_SLUG.get(keyword, "pet-product")
-    import hashlib
     uid = hashlib.md5(title.encode()).hexdigest()[:6]
     filename = f"{kw_slug}-{uid}.html"
+    date_str = datetime.now().strftime("%Y-%m-%d")
+
+    # GEO：從內文擷取重點摘要句
+    sentences = re.findall(r'[^。！？\n]{15,50}[。！？]', re.sub(r'<[^>]+>', '', content))
+    summary_points = "".join(f"<li>{s}</li>" for s in sentences[:4]) or "<li>詳細評測內容請見本文</li>"
+
+    page = template
+    page = page.replace('{{TITLE}}', title)
+    page = page.replace('{{DESCRIPTION}}', description)
+    page = page.replace('{{CONTENT}}', content)
+    page = page.replace('{{KEYWORD}}', KEYWORD_LABELS.get(keyword, keyword))
+    page = page.replace('{{AFFILIATE_URL}}', affiliate_url)
+    page = page.replace('{{FILENAME}}', filename)
+    page = page.replace('{{DATE}}', date_str)
+    page = page.replace('{{SUMMARY_POINTS}}', summary_points)
 
     meta = {
         "title": title,
