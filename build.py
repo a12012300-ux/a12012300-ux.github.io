@@ -172,10 +172,26 @@ def run_build():
         json.dump(all_meta, f, ensure_ascii=False, indent=2)
 
     update_index(all_meta)
+    build_sitemap(all_meta)
 
     print(f"\n  新增 {new_count} 篇，累積 {len(all_meta)} 篇文章")
     print(f"  首頁已更新：{BASE_DIR / 'index.html'}")
     return all_meta
+
+
+def build_sitemap(articles_meta: list):
+    base_url = "https://a12012300-ux.github.io"
+    urls = [f"  <url><loc>{base_url}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>"]
+    for a in articles_meta:
+        urls.append(f"  <url><loc>{base_url}/posts/{a['filename']}</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>{a['date']}</lastmod></url>")
+
+    sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    sitemap += "\n".join(urls)
+    sitemap += "\n</urlset>"
+
+    with open(BASE_DIR / "sitemap.xml", 'w', encoding='utf-8') as f:
+        f.write(sitemap)
+    print(f"  Sitemap 已更新：{len(articles_meta)} 個 URL")
 
 if __name__ == "__main__":
     run_build()
