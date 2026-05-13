@@ -71,8 +71,19 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     page = page.replace('{{KEYWORD}}', KEYWORD_LABELS.get(keyword, keyword))
     page = page.replace('{{AFFILIATE_URL}}', affiliate_url)
 
-    slug = re.sub(r'[^\w一-鿿-]', '-', title)[:50].strip('-')
-    filename = f"{slug}.html"
+    # 用流水號 + 關鍵字英文對照產生純英數檔名，GitHub Pages 不支援中文 URL
+    KEYWORD_SLUG = {
+        "貓砂":"cat-litter", "貓糧":"cat-food", "貓零食":"cat-snack",
+        "貓咪罐頭":"cat-can", "貓抓板":"cat-scratcher", "貓窩":"cat-bed",
+        "狗糧":"dog-food", "狗零食":"dog-snack", "狗罐頭":"dog-can",
+        "狗狗牽繩":"dog-leash", "狗窩":"dog-bed", "寵物玩具":"pet-toy",
+        "寵物外出包":"pet-carrier", "寵物洗毛精":"pet-shampoo",
+        "寵物保健":"pet-health", "寵物碗":"pet-bowl", "自動餵食器":"auto-feeder",
+    }
+    kw_slug = KEYWORD_SLUG.get(keyword, "pet-product")
+    import hashlib
+    uid = hashlib.md5(title.encode()).hexdigest()[:6]
+    filename = f"{kw_slug}-{uid}.html"
 
     meta = {
         "title": title,
