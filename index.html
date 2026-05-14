@@ -3,619 +3,226 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>毛孩研究室｜最專業的台灣寵物用品評測</title>
-<meta name="description" content="毛孩研究室提供最詳細的寵物用品評測、推薦和比較，幫助台灣飼主找到最適合毛孩的商品。">
+<title>毛孩研究室｜台灣最專業寵物用品評測</title>
+<meta name="description" content="毛孩研究室提供最詳細的寵物用品評測、推薦和比較，幫助台灣飼主找到最適合毛孩的商品。每篇文章都是真實使用心得，附蝦皮最低價連結。">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="毛孩研究室｜台灣最專業寵物用品評測">
+<meta property="og:description" content="真實飼主視角，每週更新寵物商品評測，附蝦皮優惠購買連結。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://a12012300-ux.github.io/">
+<meta property="og:image" content="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=1200&h=630&fit=crop&auto=format&q=80">
+<link rel="canonical" href="https://a12012300-ux.github.io/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "毛孩研究室",
+  "url": "https://a12012300-ux.github.io",
+  "description": "台灣寵物用品評測部落格",
+  "potentialAction": {"@type": "SearchAction", "target": "https://a12012300-ux.github.io/?q={search_term_string}", "query-input": "required name=search_term_string"}
+}
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Noto Sans TC',sans-serif;background:#f8f9fa;color:#333}
-header{background:#2d6a4f;color:white;padding:20px 0;text-align:center}
-header h1{font-size:2em;margin-bottom:8px}
-header p{opacity:.85;font-size:.95em}
-nav{background:#1b4332;padding:10px 0;text-align:center}
-nav a{color:#d8f3dc;text-decoration:none;margin:0 15px;font-size:.9em}
+body{font-family:'Noto Sans TC',system-ui,-apple-system,sans-serif;background:#f3f4f6;color:#333}
+
+/* Header */
+header{background:linear-gradient(135deg,#1b4332,#2d6a4f);color:white;padding:20px 0;text-align:center}
+header h1{font-size:2em;margin-bottom:6px;letter-spacing:.5px}
+header p{opacity:.88;font-size:.93em}
+
+/* Nav */
+nav{background:#1b4332;padding:10px 0;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+nav a{color:#d8f3dc;text-decoration:none;margin:0 14px;font-size:.88em;font-weight:500;transition:color .2s}
 nav a:hover{color:white}
-.container{max-width:1100px;margin:0 auto;padding:30px 20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;margin-top:24px}
-.card{background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:transform .2s}
-.card:hover{transform:translateY(-4px)}
-.card-tag{background:#d8f3dc;color:#1b4332;font-size:.75em;padding:4px 10px;display:inline-block;border-radius:20px;margin:16px 16px 0}
-.card h2{font-size:1.05em;padding:10px 16px 6px;line-height:1.5}
-.card p{font-size:.88em;color:#666;padding:0 16px 12px;line-height:1.6}
-.card-footer{padding:12px 16px;border-top:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center}
-.card-footer a{background:#2d6a4f;color:white;text-decoration:none;padding:7px 16px;border-radius:6px;font-size:.85em}
-.card-footer a:hover{background:#1b4332}
-.card-footer span{font-size:.8em;color:#999}
-.hero{background:linear-gradient(135deg,#2d6a4f,#52b788);color:white;padding:40px 20px;text-align:center;border-radius:12px;margin-bottom:24px}
-.hero h2{font-size:1.6em;margin-bottom:10px}
-.hero p{opacity:.9;font-size:.95em}
-footer{text-align:center;padding:30px;color:#999;font-size:.85em;margin-top:40px;border-top:1px solid #eee}
-.badge{background:#ff6b35;color:white;font-size:.7em;padding:2px 6px;border-radius:4px;margin-left:6px}
+
+/* Hero Banner */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#2d6a4f,#40916c);color:white;padding:50px 30px;text-align:center;border-radius:0 0 24px 24px;margin-bottom:32px}
+.hero::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1400&h=400&fit=crop&auto=format&q=60') center/cover;opacity:.25}
+.hero-content{position:relative;z-index:1}
+.hero h2{font-size:1.9em;margin-bottom:10px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+.hero p{opacity:.92;font-size:1em;margin-bottom:20px}
+.hero-stats{display:flex;justify-content:center;gap:32px;flex-wrap:wrap;margin-top:24px}
+.stat{text-align:center}
+.stat-num{font-size:1.8em;font-weight:700;display:block}
+.stat-label{font-size:.78em;opacity:.85;margin-top:2px}
+
+/* Container */
+.container{max-width:1140px;margin:0 auto;padding:0 20px 60px}
+
+/* Section Title */
+.section-title{font-size:1.25em;font-weight:700;color:#1b4332;margin:8px 0 20px;display:flex;align-items:center;gap:10px}
+.badge{background:#ee4d2d;color:white;font-size:.68em;padding:2px 8px;border-radius:20px;font-weight:600;vertical-align:middle}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
+
+/* Card */
+.card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-5px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.card-img-link{display:block;overflow:hidden;height:200px}
+.card-img{width:100%;height:200px;object-fit:cover;transition:transform .3s;display:block}
+.card:hover .card-img{transform:scale(1.05)}
+.card-body{padding:16px 18px 14px;display:flex;flex-direction:column;flex:1}
+.card-tag{background:#d8f3dc;color:#1b4332;font-size:.72em;padding:3px 10px;display:inline-block;border-radius:20px;margin-bottom:10px;font-weight:600;width:fit-content}
+.card h2{font-size:1em;line-height:1.55;margin-bottom:8px;flex:1}
+.card h2 a{color:#1b4332;text-decoration:none}
+.card h2 a:hover{color:#2d6a4f;text-decoration:underline}
+.card p{font-size:.85em;color:#6b7280;line-height:1.6;margin-bottom:12px}
+.card-meta{display:flex;align-items:center;gap:10px;font-size:.78em;color:#888;margin-bottom:12px;flex-wrap:wrap}
+.stars{color:#f59e0b;letter-spacing:.5px}
+.card-price{color:#dc2626;font-weight:700;font-size:.9em}
+.read-time{color:#9ca3af}
+.card-footer{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #f3f4f6;margin-top:auto}
+.btn-read{background:#2d6a4f;color:white;text-decoration:none;padding:7px 16px;border-radius:7px;font-size:.82em;font-weight:600;transition:background .2s}
+.btn-read:hover{background:#1b4332}
+.card-date{font-size:.75em;color:#bbb}
+
+/* Footer */
+footer{text-align:center;padding:30px 20px;color:#999;font-size:.84em;border-top:1px solid #e5e7eb;background:white;margin-top:20px}
+footer a{color:#2d6a4f;text-decoration:none}
+
+@media(max-width:640px){
+  .hero h2{font-size:1.4em}
+  .hero-stats{gap:20px}
+  .grid{grid-template-columns:1fr}
+  .card-img-link,.card-img{height:180px}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>🐾 毛孩研究室</h1>
-  <p>台灣最用心的寵物用品評測 × 每週更新推薦</p>
+  <p>台灣最用心的寵物用品評測 × 真實飼主視角 × 每週更新</p>
 </header>
 <nav>
-  <a href="index.html">首頁</a>
-  <a href="#dogs">狗狗專區</a>
-  <a href="#cats">貓咪專區</a>
-  <a href="#health">保健食品</a>
-  <a href="#toys">玩具用品</a>
+  <a href="index.html">🏠 首頁</a>
+  <a href="#cats">🐱 貓咪</a>
+  <a href="#dogs">🐶 狗狗</a>
+  <a href="#smart">🤖 智能</a>
+  <a href="#outdoor">🎒 外出</a>
 </nav>
-<div class="container">
-  <div class="hero">
+
+<div class="hero">
+  <div class="hero-content">
     <h2>幫毛孩選對商品，從這裡開始 🐶🐱</h2>
-    <p>每篇文章都是真實飼主視角，附上蝦皮最低價連結</p>
-  </div>
-  <h2 style="margin-top:8px">最新評測文章 <span class="badge">持續更新</span></h2>
-  <div class="grid" id="article-grid">
-    <!-- 文章卡片由 build.py 自動生成 -->
-    <div class="card">
-      <span class="card-tag">智能用品</span>
-      <h2>寵物自動餵食器 WiFi遠端控制評測｜上班族飼主必備神器</h2>
-      <p>寵物自動餵食器 WiFi遠端控制 評測推薦，NT$1290，月銷1650件...</p>
-      <div class="card-footer">
-        <a href="posts/auto-feeder-4b5e00.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機評測｜靜音過濾寵物碗，讓喵星人愛上喝水</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-bowl-041cff.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜4.8星高評分，挑食貓也愛吃的罐頭推薦</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-can-052a63.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜1500位飼主激推的必備神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-carrier-b4c8fb.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm 消臭大師貓砂 7L 評測｜超強除臭貓砂 CP 值最高的選擇</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-litter-8a3e10.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機評測｜靜音過濾寵物碗，讓喵星人愛上喝水</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-bowl-041cff.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜4.8星高評分，挑食貓也愛吃的罐頭推薦</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-can-052a63.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜1500位飼主激推的必備神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-carrier-b4c8fb.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm 消臭大師貓砂 7L 評測｜超強除臭貓砂 CP 值最高的選擇</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-litter-8a3e10.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機評測｜靜音過濾寵物碗，讓喵星人愛上喝水</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-bowl-041cff.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜4.8星高評分，挑食貓也愛吃的罐頭推薦</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-can-052a63.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜1500位飼主激推的必備神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-carrier-b4c8fb.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm 消臭大師貓砂 7L 評測｜超強除臭貓砂 CP 值最高的選擇</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-litter-8a3e10.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機評測｜靜音過濾寵物碗，讓喵星人愛上喝水</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-bowl-041cff.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜4.8星高評分，挑食貓也愛吃的罐頭推薦</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-can-052a63.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜1500位飼主激推的必備神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-carrier-b4c8fb.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm 消臭大師貓砂 7L 評測｜超強除臭貓砂 CP 值最高的選擇</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-litter-8a3e10.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機評測｜靜音過濾寵物碗，讓喵星人愛上喝水</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-bowl-041cff.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜4.8星高評分，挑食貓也愛吃的罐頭推薦</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-can-052a63.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜1500位飼主激推的必備神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/pet-carrier-b4c8fb.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm 消臭大師貓砂 7L 評測｜超強除臭貓砂 CP 值最高的選擇</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/cat-litter-8a3e10.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機評測｜靜音過濾寵物碗，讓喵星人愛上喝水</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/電動貓咪飲水機評測-靜音過濾寵物碗-讓喵星人愛上喝水.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜4.8星高評分，挑食貓也愛吃的罐頭推薦</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/Inaba-雞肉貓咪罐頭評測-4-8星高評分-挑食貓也愛吃的罐頭推薦.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜1500位飼主激推的必備神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/Catidea-太空艙寵物外出包評測-1500位飼主激推的必備神器.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm 消臭大師貓砂 7L 評測｜超強除臭貓砂 CP 值最高的選擇</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/Unicharm-消臭大師貓砂-7L-評測-超強除臭貓砂-CP-值最高的選擇.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>貓咪喝水成難題？電動飲水機靜音過濾器一機搞定｜寵物碗革新評測</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/貓咪喝水成難題-電動飲水機靜音過濾器一機搞定-寵物碗革新評測.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜480元24入CP值爆表，挑食貓咪也愛上</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/Inaba-雞肉貓咪罐頭評測-480元24入CP值爆表-挑食貓咪也愛上.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea太空艙寵物外出包評測｜貓奴必備的神級寵物外出包</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/Catidea太空艙寵物外出包評測-貓奴必備的神級寵物外出包.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm消臭大師貓砂7L評測｜除臭效果實測，3500位飼主都說讚</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/Unicharm消臭大師貓砂7L評測-除臭效果實測-3500位飼主都說讚.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>貓咪飲水新革命！電動貓咪飲水機靜音過濾器評測｜寵物碗推薦</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/貓咪飲水新革命-電動貓咪飲水機靜音過濾器評測-寵物碗推薦.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜讓挑食貓咪愛上進食的秘密武器</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/Inaba-雞肉貓咪罐頭評測-讓挑食貓咪愛上進食的秘密武器.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜終於找到不悶不擠的寵物外出包！</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/Catidea-太空艙寵物外出包評測-終於找到不悶不擠的寵物外出包.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm 消臭大師貓砂評測｜7L 貓砂開箱心得，解決貓砂異味困擾</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/Unicharm-消臭大師貓砂評測-7L-貓砂開箱心得-解決貓砂異味困擾.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機靜音過濾器評測｜貓奴必備的寵物碗選擇</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/電動貓咪飲水機靜音過濾器評測-貓奴必備的寵物碗選擇.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba雞肉貓咪罐頭評測｜月銷3200件的必買罐頭！</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/Inaba雞肉貓咪罐頭評測-月銷3200件的必買罐頭.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜貓奴必備的外出神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/Catidea-太空艙寵物外出包評測-貓奴必備的外出神器.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm消臭大師貓砂評測｜7L貓砂推薦，除臭實測分享</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/Unicharm消臭大師貓砂評測-7L貓砂推薦-除臭實測分享.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">智能用品</span>
-      <h2>寵物自動餵食器 WiFi遠端控制評測｜再也不用擔心毛孩挨餓</h2>
-      <p>寵物自動餵食器 WiFi遠端控制 評測推薦，NT$1290，月銷1650件...</p>
-      <div class="card-footer">
-        <a href="posts/寵物自動餵食器-WiFi遠端控制評測-再也不用擔心毛孩挨餓.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機靜音過濾器評測｜終於找到讓貓主子乖乖喝水的寵物碗</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/電動貓咪飲水機靜音過濾器評測-終於找到讓貓主子乖乖喝水的寵物碗.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜480元24入划算嗎？真實飼主試吃心得</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/Inaba-雞肉貓咪罐頭評測-480元24入划算嗎-真實飼主試吃心得.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜1500位飼主推薦的必備神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/Catidea-太空艙寵物外出包評測-1500位飼主推薦的必備神器.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm消臭大師貓砂7L｜養貓必備！除臭效果強到家裡沒貓味</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/Unicharm消臭大師貓砂7L-養貓必備-除臭效果強到家裡沒貓味.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">智能用品</span>
-      <h2>寵物自動餵食器 WiFi遠端控制｜上班族必備，再也不怕毛孩餓肚子</h2>
-      <p>寵物自動餵食器 WiFi遠端控制 評測推薦，NT$1290，月銷1650件...</p>
-      <div class="card-footer">
-        <a href="posts/寵物自動餵食器-WiFi遠端控制-上班族必備-再也不怕毛孩餓肚子.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機靜音過濾器評測｜寵物碗推薦必買款</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/電動貓咪飲水機靜音過濾器評測-寵物碗推薦必買款.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭開箱評測｜cp值最高的日本貓罐頭推薦</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/Inaba-雞肉貓咪罐頭開箱評測-cp值最高的日本貓罐頭推薦.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜終於找到不會被貓咪嫌棄的外出包</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/Catidea-太空艙寵物外出包評測-終於找到不會被貓咪嫌棄的外出包.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm 消臭大師貓砂 7L｜飼主真實評測，除臭效果讓你家不再臭烘烘</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/Unicharm-消臭大師貓砂-7L-飼主真實評測-除臭效果讓你家不再臭烘烘.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機靜音過濾器評測｜貓奴必備的寵物碗選擇</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/電動貓咪飲水機靜音過濾器評測-貓奴必備的寵物碗選擇.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba雞肉貓咪罐頭評測｜月銷3200件的必買罐頭！</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/Inaba雞肉貓咪罐頭評測-月銷3200件的必買罐頭.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜貓奴必備的外出神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/Catidea-太空艙寵物外出包評測-貓奴必備的外出神器.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm消臭大師貓砂評測｜7L貓砂推薦，除臭實測分享</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/Unicharm消臭大師貓砂評測-7L貓砂推薦-除臭實測分享.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">智能用品</span>
-      <h2>寵物自動餵食器 WiFi遠端控制評測｜再也不用擔心毛孩挨餓</h2>
-      <p>寵物自動餵食器 WiFi遠端控制 評測推薦，NT$1290，月銷1650件...</p>
-      <div class="card-footer">
-        <a href="posts/寵物自動餵食器-WiFi遠端控制評測-再也不用擔心毛孩挨餓.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機靜音過濾器評測｜終於找到讓貓主子乖乖喝水的寵物碗</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/電動貓咪飲水機靜音過濾器評測-終於找到讓貓主子乖乖喝水的寵物碗.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba 雞肉貓咪罐頭評測｜480元24入划算嗎？真實飼主試吃心得</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/Inaba-雞肉貓咪罐頭評測-480元24入划算嗎-真實飼主試吃心得.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜1500位飼主推薦的必備神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/Catidea-太空艙寵物外出包評測-1500位飼主推薦的必備神器.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm消臭大師貓砂7L｜養貓必備！除臭效果強到家裡沒貓味</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/Unicharm消臭大師貓砂7L-養貓必備-除臭效果強到家裡沒貓味.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">飲食用具</span>
-      <h2>電動貓咪飲水機靜音過濾器評測｜貓奴必備的寵物碗選擇</h2>
-      <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
-      <div class="card-footer">
-        <a href="posts/電動貓咪飲水機靜音過濾器評測-貓奴必備的寵物碗選擇.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪飲食</span>
-      <h2>Inaba雞肉貓咪罐頭評測｜月銷3200件的必買罐頭！</h2>
-      <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
-      <div class="card-footer">
-        <a href="posts/Inaba雞肉貓咪罐頭評測-月銷3200件的必買罐頭.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">外出用品</span>
-      <h2>Catidea 太空艙寵物外出包評測｜貓奴必備的外出神器</h2>
-      <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
-      <div class="card-footer">
-        <a href="posts/Catidea-太空艙寵物外出包評測-貓奴必備的外出神器.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
-    </div>
-    <div class="card">
-      <span class="card-tag">貓咪日常</span>
-      <h2>Unicharm消臭大師貓砂評測｜7L貓砂推薦，除臭實測分享</h2>
-      <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
-      <div class="card-footer">
-        <a href="posts/Unicharm消臭大師貓砂評測-7L貓砂推薦-除臭實測分享.html">閱讀評測 →</a>
-        <span>2026-05-14</span>
-      </div>
+    <p>每篇都是真實飼主測試心得，附上蝦皮最低價連結，買前必讀！</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">5+</span><span class="stat-label">評測文章</span></div>
+      <div class="stat"><span class="stat-num">17</span><span class="stat-label">商品分類</span></div>
+      <div class="stat"><span class="stat-num">4.8★</span><span class="stat-label">平均評分</span></div>
     </div>
   </div>
 </div>
+
+<div class="container">
+  <div class="section-title">
+    最新評測文章 <span class="badge">持續更新</span>
+  </div>
+  <div class="grid" id="article-grid">
+    <!-- CARDS_START -->
+    <div class="card">
+      <a href="posts/auto-feeder-4b5e00.html" class="card-img-link">
+        <img src="https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80" alt="寵物自動餵食器 WiFi遠端控制評測｜上班族飼主必備神器" loading="lazy" class="card-img">
+      </a>
+      <div class="card-body">
+        <span class="card-tag">智能用品</span>
+        <h2><a href="posts/auto-feeder-4b5e00.html">寵物自動餵食器 WiFi遠端控制評測｜上班族飼主必備神器</a></h2>
+        <p>寵物自動餵食器 WiFi遠端控制 評測推薦，NT$1290，月銷1650件...</p>
+        <div class="card-meta">
+          <span class="stars" title="評分 4.5/5">★★★★☆ 4.5</span>
+          <span class="card-price">NT$1290</span>
+          <span class="read-time">📖 3 分鐘</span>
+        </div>
+        <div class="card-footer">
+          <a href="posts/auto-feeder-4b5e00.html" class="btn-read">閱讀評測 →</a>
+          <span class="card-date">2026-05-14</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <a href="posts/pet-bowl-041cff.html" class="card-img-link">
+        <img src="https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80" alt="電動貓咪飲水機評測｜靜音過濾寵物碗，讓喵星人愛上喝水" loading="lazy" class="card-img">
+      </a>
+      <div class="card-body">
+        <span class="card-tag">飲食用具</span>
+        <h2><a href="posts/pet-bowl-041cff.html">電動貓咪飲水機評測｜靜音過濾寵物碗，讓喵星人愛上喝水</a></h2>
+        <p>電動貓咪飲水機靜音過濾器 評測推薦，NT$699，月銷2300件...</p>
+        <div class="card-meta">
+          <span class="stars" title="評分 4.7/5">★★★★☆ 4.7</span>
+          <span class="card-price">NT$349</span>
+          <span class="read-time">📖 3 分鐘</span>
+        </div>
+        <div class="card-footer">
+          <a href="posts/pet-bowl-041cff.html" class="btn-read">閱讀評測 →</a>
+          <span class="card-date">2026-05-14</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <a href="posts/cat-can-052a63.html" class="card-img-link">
+        <img src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80" alt="Inaba 雞肉貓咪罐頭評測｜4.8星高評分，挑食貓也愛吃的罐頭推薦" loading="lazy" class="card-img">
+      </a>
+      <div class="card-body">
+        <span class="card-tag">貓咪飲食</span>
+        <h2><a href="posts/cat-can-052a63.html">Inaba 雞肉貓咪罐頭評測｜4.8星高評分，挑食貓也愛吃的罐頭推薦</a></h2>
+        <p>Inaba 雞肉貓咪罐頭 85g*24入 評測推薦，NT$480，月銷3200件...</p>
+        <div class="card-meta">
+          <span class="stars" title="評分 4.8/5">★★★★☆ 4.8</span>
+          <span class="card-price">NT$480</span>
+          <span class="read-time">📖 3 分鐘</span>
+        </div>
+        <div class="card-footer">
+          <a href="posts/cat-can-052a63.html" class="btn-read">閱讀評測 →</a>
+          <span class="card-date">2026-05-14</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <a href="posts/pet-carrier-b4c8fb.html" class="card-img-link">
+        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=450&fit=crop&auto=format&q=80" alt="Catidea 太空艙寵物外出包評測｜1500位飼主激推的必備神器" loading="lazy" class="card-img">
+      </a>
+      <div class="card-body">
+        <span class="card-tag">外出用品</span>
+        <h2><a href="posts/pet-carrier-b4c8fb.html">Catidea 太空艙寵物外出包評測｜1500位飼主激推的必備神器</a></h2>
+        <p>Catidea 太空艙寵物外出包 評測推薦，NT$890，月銷1500件...</p>
+        <div class="card-meta">
+          <span class="stars" title="評分 4.7/5">★★★★☆ 4.7</span>
+          <span class="card-price">NT$890</span>
+          <span class="read-time">📖 3 分鐘</span>
+        </div>
+        <div class="card-footer">
+          <a href="posts/pet-carrier-b4c8fb.html" class="btn-read">閱讀評測 →</a>
+          <span class="card-date">2026-05-14</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <a href="posts/cat-litter-8a3e10.html" class="card-img-link">
+        <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&h=450&fit=crop&auto=format&q=80" alt="Unicharm 消臭大師貓砂 7L 評測｜超強除臭貓砂 CP 值最高的選擇" loading="lazy" class="card-img">
+      </a>
+      <div class="card-body">
+        <span class="card-tag">貓咪日常</span>
+        <h2><a href="posts/cat-litter-8a3e10.html">Unicharm 消臭大師貓砂 7L 評測｜超強除臭貓砂 CP 值最高的選擇</a></h2>
+        <p>Unicharm 消臭大師貓砂 7L 評測推薦，NT$299，月銷3500件...</p>
+        <div class="card-meta">
+          <span class="stars" title="評分 4.9/5">★★★★☆ 4.9</span>
+          <span class="card-price">NT$299</span>
+          <span class="read-time">📖 3 分鐘</span>
+        </div>
+        <div class="card-footer">
+          <a href="posts/cat-litter-8a3e10.html" class="btn-read">閱讀評測 →</a>
+          <span class="card-date">2026-05-14</span>
+        </div>
+      </div>
+    </div>
+  <!-- CARDS_END -->
+  </div>
+</div>
+
 <footer>
-  © 2026 毛孩研究室 · 本站含有聯盟行銷連結，購買商品將提供小額佣金支持我們持續評測
+  <p>© 2026 <a href="index.html">毛孩研究室</a> · 專業寵物用品評測</p>
+  <p style="margin-top:6px">本站含有聯盟行銷連結，您的購買將支持我們持續提供免費評測內容</p>
 </footer>
 </body>
 </html>

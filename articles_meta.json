@@ -6,6 +6,10 @@
     "label": "智能用品",
     "filename": "auto-feeder-4b5e00.html",
     "affiliate_url": "https://s.shopee.tw/17C8Lq1v1",
+    "image_url": "https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80",
+    "price": "1290",
+    "rating": "4.5",
+    "read_time": 3,
     "date": "2026-05-14"
   },
   {
@@ -15,6 +19,10 @@
     "label": "飲食用具",
     "filename": "pet-bowl-041cff.html",
     "affiliate_url": "https://s.shopee.tw/4Awl5yEZ5p",
+    "image_url": "https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80",
+    "price": "349",
+    "rating": "4.7",
+    "read_time": 3,
     "date": "2026-05-14"
   },
   {
@@ -24,6 +32,10 @@
     "label": "貓咪飲食",
     "filename": "cat-can-052a63.html",
     "affiliate_url": "https://s.shopee.tw/6fe64MGYRE",
+    "image_url": "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80",
+    "price": "480",
+    "rating": "4.8",
+    "read_time": 3,
     "date": "2026-05-14"
   },
   {
@@ -33,6 +45,10 @@
     "label": "外出用品",
     "filename": "pet-carrier-b4c8fb.html",
     "affiliate_url": "https://s.shopee.tw/2g7xJ94I9x",
+    "image_url": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=450&fit=crop&auto=format&q=80",
+    "price": "890",
+    "rating": "4.7",
+    "read_time": 3,
     "date": "2026-05-14"
   },
   {
@@ -42,6 +58,10 @@
     "label": "貓咪日常",
     "filename": "cat-litter-8a3e10.html",
     "affiliate_url": "https://s.shopee.tw/AADyDTrst5",
+    "image_url": "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&h=450&fit=crop&auto=format&q=80",
+    "price": "299",
+    "rating": "4.9",
+    "read_time": 3,
     "date": "2026-05-14"
   }
 ]

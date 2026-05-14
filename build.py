@@ -31,6 +31,38 @@ KEYWORD_LABELS = {
     "寵物碗": "飲食用具", "自動餵食器": "智能用品",
 }
 
+# Unsplash 免費圖片（依關鍵字分類）
+KEYWORD_IMAGES = {
+    "貓砂":      "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&h=450&fit=crop&auto=format&q=80",
+    "貓糧":      "https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80",
+    "貓零食":    "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80",
+    "貓咪罐頭":  "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80",
+    "貓抓板":    "https://images.unsplash.com/photo-1615789591457-74a63395c990?w=800&h=450&fit=crop&auto=format&q=80",
+    "貓窩":      "https://images.unsplash.com/photo-1506146332389-18140dc7b2fb?w=800&h=450&fit=crop&auto=format&q=80",
+    "狗糧":      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
+    "狗零食":    "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
+    "狗罐頭":    "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
+    "狗狗牽繩":  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=450&fit=crop&auto=format&q=80",
+    "狗窩":      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
+    "寵物玩具":  "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=800&h=450&fit=crop&auto=format&q=80",
+    "寵物外出包": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=450&fit=crop&auto=format&q=80",
+    "寵物洗毛精": "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
+    "寵物保健":  "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80",
+    "寵物碗":    "https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80",
+    "自動餵食器": "https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80",
+}
+DEFAULT_IMAGE = "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80"
+
+KEYWORD_SLUG = {
+    "貓砂":"cat-litter", "貓糧":"cat-food", "貓零食":"cat-snack",
+    "貓咪罐頭":"cat-can", "貓抓板":"cat-scratcher", "貓窩":"cat-bed",
+    "狗糧":"dog-food", "狗零食":"dog-snack", "狗罐頭":"dog-can",
+    "狗狗牽繩":"dog-leash", "狗窩":"dog-bed", "寵物玩具":"pet-toy",
+    "寵物外出包":"pet-carrier", "寵物洗毛精":"pet-shampoo",
+    "寵物保健":"pet-health", "寵物碗":"pet-bowl", "自動餵食器":"auto-feeder",
+}
+
+
 def extract_title(html: str) -> str:
     m = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
     if m:
@@ -39,6 +71,7 @@ def extract_title(html: str) -> str:
     if m:
         return re.sub(r'<[^>]+>', '', m.group(1)).strip()
     return "寵物商品評測"
+
 
 def extract_description(html: str) -> str:
     m = re.search(r'<meta name="description"[^>]*content="([^"]*)"', html, re.IGNORECASE)
@@ -50,9 +83,18 @@ def extract_description(html: str) -> str:
         return text[:120] + '...' if len(text) > 120 else text
     return ""
 
+
 def extract_body(html: str) -> str:
     m = re.search(r'<body[^>]*>(.*?)</body>', html, re.IGNORECASE | re.DOTALL)
     return m.group(1).strip() if m else html
+
+
+def calc_read_time(html: str) -> int:
+    """估算閱讀時間（分鐘）：中文約 400 字/分鐘"""
+    text = re.sub(r'<[^>]+>', '', html)
+    char_count = len(text.replace('\n', '').replace(' ', ''))
+    return max(1, round(char_count / 400))
+
 
 def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[str, dict]:
     with open(src_path, encoding='utf-8') as f:
@@ -63,23 +105,43 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     content = extract_body(src_html)
     keyword = summary.get('keyword', '寵物推薦')
     affiliate_url = summary.get('affiliate_url', 'https://shopee.tw')
+    price = str(summary.get('price', ''))
+    rating = str(summary.get('rating', '4.8'))
 
-    KEYWORD_SLUG = {
-        "貓砂":"cat-litter", "貓糧":"cat-food", "貓零食":"cat-snack",
-        "貓咪罐頭":"cat-can", "貓抓板":"cat-scratcher", "貓窩":"cat-bed",
-        "狗糧":"dog-food", "狗零食":"dog-snack", "狗罐頭":"dog-can",
-        "狗狗牽繩":"dog-leash", "狗窩":"dog-bed", "寵物玩具":"pet-toy",
-        "寵物外出包":"pet-carrier", "寵物洗毛精":"pet-shampoo",
-        "寵物保健":"pet-health", "寵物碗":"pet-bowl", "自動餵食器":"auto-feeder",
-    }
     kw_slug = KEYWORD_SLUG.get(keyword, "pet-product")
     uid = hashlib.md5(title.encode()).hexdigest()[:6]
     filename = f"{kw_slug}-{uid}.html"
     date_str = datetime.now().strftime("%Y-%m-%d")
 
+    image_url = KEYWORD_IMAGES.get(keyword, DEFAULT_IMAGE)
+    read_time = calc_read_time(content)
+
     # GEO：從內文擷取重點摘要句
     sentences = re.findall(r'[^。！？\n]{15,50}[。！？]', re.sub(r'<[^>]+>', '', content))
     summary_points = "".join(f"<li>{s}</li>" for s in sentences[:4]) or "<li>詳細評測內容請見本文</li>"
+
+    # FAQ Schema：從文章擷取 FAQ 區段
+    faq_items = re.findall(
+        r'<h[23][^>]*>([^<]*\？[^<]*)</h[23]>\s*<p[^>]*>(.*?)</p>',
+        content, re.IGNORECASE | re.DOTALL
+    )
+    if faq_items:
+        def safe(s):
+            return re.sub(r'<[^>]+>', '', s).strip().replace('"', "'")[:200]
+        faq_entries = ",\n".join(
+            f'{{"@type":"Question","name":"{safe(q)}","acceptedAnswer":{{"@type":"Answer","text":"{safe(a)}"}}}}'
+            for q, a in faq_items[:5]
+        )
+        faq_schema = f'<script type="application/ld+json">{{\n  "@context":"https://schema.org","@type":"FAQPage","mainEntity":[{faq_entries}]\n}}</script>'
+    else:
+        faq_schema = ""
+
+    # 星星評分
+    try:
+        r = float(rating)
+    except:
+        r = 4.8
+    stars = "★" * int(r) + "☆" * (5 - int(r))
 
     page = template
     page = page.replace('{{TITLE}}', title)
@@ -90,6 +152,12 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     page = page.replace('{{FILENAME}}', filename)
     page = page.replace('{{DATE}}', date_str)
     page = page.replace('{{SUMMARY_POINTS}}', summary_points)
+    page = page.replace('{{IMAGE_URL}}', image_url)
+    page = page.replace('{{READ_TIME}}', str(read_time))
+    page = page.replace('{{PRICE}}', price)
+    page = page.replace('{{RATING}}', rating)
+    page = page.replace('{{STARS}}', stars)
+    page = page.replace('{{FAQ_SCHEMA}}', faq_schema)
 
     meta = {
         "title": title,
@@ -98,9 +166,14 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
         "label": KEYWORD_LABELS.get(keyword, keyword),
         "filename": filename,
         "affiliate_url": affiliate_url,
+        "image_url": image_url,
+        "price": price,
+        "rating": rating,
+        "read_time": read_time,
         "date": datetime.now().strftime("%Y-%m-%d"),
     }
     return page, meta
+
 
 def update_index(articles_meta: list):
     index_path = BASE_DIR / "index.html"
@@ -109,24 +182,46 @@ def update_index(articles_meta: list):
 
     cards_html = ""
     for a in sorted(articles_meta, key=lambda x: x['date'], reverse=True):
+        img = a.get('image_url', DEFAULT_IMAGE)
+        price = a.get('price', '')
+        rating = a.get('rating', '4.8')
+        read_time = a.get('read_time', 3)
+        try:
+            r = float(rating)
+        except:
+            r = 4.8
+        price_html = f'<span class="card-price">NT${price}</span>' if price else ''
+        stars = "★" * int(r) + "☆" * (5 - int(r))
         cards_html += f"""
     <div class="card">
-      <span class="card-tag">{a['label']}</span>
-      <h2>{a['title']}</h2>
-      <p>{a['description'][:80]}...</p>
-      <div class="card-footer">
-        <a href="posts/{a['filename']}">閱讀評測 →</a>
-        <span>{a['date']}</span>
+      <a href="posts/{a['filename']}" class="card-img-link">
+        <img src="{img}" alt="{a['title']}" loading="lazy" class="card-img">
+      </a>
+      <div class="card-body">
+        <span class="card-tag">{a['label']}</span>
+        <h2><a href="posts/{a['filename']}">{a['title']}</a></h2>
+        <p>{a['description'][:75]}...</p>
+        <div class="card-meta">
+          <span class="stars" title="評分 {rating}/5">{stars} {rating}</span>
+          {price_html}
+          <span class="read-time">📖 {read_time} 分鐘</span>
+        </div>
+        <div class="card-footer">
+          <a href="posts/{a['filename']}" class="btn-read">閱讀評測 →</a>
+          <span class="card-date">{a['date']}</span>
+        </div>
       </div>
     </div>"""
 
+    # 用清晰標記替換卡片區域，避免重複疊加
     index_html = re.sub(
-        r'<!-- 文章卡片由 build\.py 自動生成 -->.*?(?=\s*</div>\s*</div>)',
-        '<!-- 文章卡片由 build.py 自動生成 -->' + cards_html,
+        r'<!-- CARDS_START -->.*?<!-- CARDS_END -->',
+        '<!-- CARDS_START -->' + cards_html + '\n  <!-- CARDS_END -->',
         index_html, flags=re.DOTALL
     )
     with open(index_path, 'w', encoding='utf-8') as f:
         f.write(index_html)
+
 
 def run_build():
     ARTICLES_DST.mkdir(exist_ok=True)
@@ -141,6 +236,23 @@ def run_build():
 
     with open(summary_files[0], encoding='utf-8') as f:
         summaries = json.load(f)
+
+    # 補充摘要裡可能缺少的 price/rating（從 radar JSON 讀取）
+    radar_files = sorted(glob.glob(str(SUMMARY_DIR / "radar_*.json")), reverse=True)
+    radar_map = {}
+    if radar_files:
+        with open(radar_files[0], encoding='utf-8') as f:
+            radar_data = json.load(f)
+        for p in radar_data:
+            radar_map[p.get('keyword', '')] = p
+
+    for s in summaries:
+        kw = s.get('keyword', '')
+        if kw in radar_map:
+            if 'price' not in s:
+                s['price'] = radar_map[kw].get('price_twd', '')
+            if 'rating' not in s:
+                s['rating'] = radar_map[kw].get('rating', '4.8')
 
     src_files = sorted(glob.glob(str(ARTICLES_SRC / "*.html")))
 
@@ -198,6 +310,7 @@ def build_sitemap(articles_meta: list):
     with open(BASE_DIR / "sitemap.xml", 'w', encoding='utf-8') as f:
         f.write(sitemap)
     print(f"  Sitemap 已更新：{len(articles_meta)} 個 URL")
+
 
 if __name__ == "__main__":
     run_build()
