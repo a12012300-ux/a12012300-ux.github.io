@@ -72,6 +72,8 @@ jobs:
 
     # ── 步驟6b：生成 YouTube 影片 ────────────────────────────
     - name: 🎬 生成今日 YouTube 影片
+      env:
+        PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
       run: python pipeline/video_maker.py
 
     # ── 步驟6c：上傳到 YouTube ────────────────────────────
