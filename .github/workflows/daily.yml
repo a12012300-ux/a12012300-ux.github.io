@@ -10,7 +10,7 @@ on:
       articles_count:
         description: '今天要發幾篇文章（預設5篇）'
         required: false
-        default: '5'
+        default: '10'
 
 jobs:
   daily-post:
@@ -40,7 +40,7 @@ jobs:
     - name: ✍️ AI 生成今日評測文章
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        ARTICLES_PER_DAY: ${{ github.event.inputs.articles_count || '5' }}
+        ARTICLES_PER_DAY: ${{ github.event.inputs.articles_count || '10' }}
       run: python pipeline/writer.py
 
     # ── 步驟5：建站（套用模板、更新首頁、更新 Sitemap）─────
