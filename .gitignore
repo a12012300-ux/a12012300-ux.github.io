@@ -1,0 +1,7 @@
+# 憑證與敏感資料（絕對不能 commit）
+pipeline/youtube_credentials.txt
+.env
+*.env
+pipeline/output/videos/
+__pycache__/
+*.pyc

@@ -36,7 +36,7 @@ class CallbackHandler(BaseHTTPRequestHandler):
         auth_code = params.get("code", [None])[0]
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b"<h1>授權成功！回到終端機看 refresh token</h1>")
+        self.wfile.write(b"<h1>Auth OK! Check terminal for refresh token.</h1>")
 
     def log_message(self, *args):
         pass
@@ -79,18 +79,23 @@ def main():
     refresh_token = result.get("refresh_token", "")
     if refresh_token:
         print("\n" + "="*55)
-        print("  ✅ 成功取得 Refresh Token！")
+        print("  [OK] Got Refresh Token!")
         print("="*55)
         print(f"\n  REFRESH_TOKEN:\n  {refresh_token}\n")
-        print("  請把上方 token 加到 GitHub Secrets：")
+        print("  Add to GitHub Secrets:")
         print("  Key:   YOUTUBE_REFRESH_TOKEN")
         print(f"  Value: {refresh_token}")
-        print("\n  同時加入：")
-        print(f"  YOUTUBE_CLIENT_ID     = {CLIENT_ID}")
+        print(f"\n  YOUTUBE_CLIENT_ID     = {CLIENT_ID}")
         print(f"  YOUTUBE_CLIENT_SECRET = {CLIENT_SECRET}")
         print("="*55)
+        # 同時寫入檔案以防終端機顯示問題
+        with open("pipeline/youtube_credentials.txt", "w") as f:
+            f.write(f"YOUTUBE_REFRESH_TOKEN={refresh_token}\n")
+            f.write(f"YOUTUBE_CLIENT_ID={CLIENT_ID}\n")
+            f.write(f"YOUTUBE_CLIENT_SECRET={CLIENT_SECRET}\n")
+        print("  [OK] Saved to pipeline/youtube_credentials.txt")
     else:
-        print(f"  [!] 失敗：{result}")
+        print(f"  [!] Failed: {result}")
 
 
 if __name__ == "__main__":
