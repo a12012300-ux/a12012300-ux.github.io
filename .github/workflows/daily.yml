@@ -33,8 +33,13 @@ jobs:
         cache: 'pip'
 
     # ── 步驟3：安裝套件 ────────────────────────────────────
-    - name: 📦 安裝必要套件
-      run: pip install anthropic requests
+    - name: 📦 安裝系統套件（影片用）
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y ffmpeg fonts-noto-cjk
+
+    - name: 📦 安裝 Python 套件
+      run: pip install anthropic requests edge-tts moviepy pillow numpy google-auth google-auth-oauthlib google-api-python-client
 
     # ── 步驟4：用 Claude AI 生成今日文章 ─────────────────────
     - name: ✍️ AI 生成今日評測文章
@@ -61,6 +66,18 @@ jobs:
           git push
           echo "✅ 推送成功！"
         fi
+
+    # ── 步驟6b：生成 YouTube 影片 ────────────────────────────
+    - name: 🎬 生成今日 YouTube 影片
+      run: python pipeline/video_maker.py
+
+    # ── 步驟6c：上傳到 YouTube ────────────────────────────
+    - name: 📺 上傳影片到 YouTube
+      env:
+        YOUTUBE_CLIENT_ID:     ${{ secrets.YOUTUBE_CLIENT_ID }}
+        YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+        YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      run: python pipeline/youtube_uploader.py
 
     # ── 步驟7：發布到 Threads + Instagram ─────────────────
     - name: 📱 發布到社群媒體
