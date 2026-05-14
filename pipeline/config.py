@@ -48,6 +48,17 @@ SHOPEE_AFFILIATE_LINKS = {
     "貓零食":     "https://s.shopee.tw/50VtNJ9vTx",
     "狗零食":     "https://s.shopee.tw/5q50MrbDSY",
     "貓抓板":     "https://s.shopee.tw/5flaAYbqnX",
+    # ── 第三批（2026-05-14 新增）────────────────────────────
+    "梳毛刷":     "https://s.shopee.tw/2LV8KP4qqr",
+    "指甲剪":     "https://s.shopee.tw/2BBi865UBq",
+    "寵物牙膏":   "https://s.shopee.tw/20sHvn67Wp",
+    "尿布墊":     "https://s.shopee.tw/3B4FJw1gA4",
+    "寵物雨衣":   "https://s.shopee.tw/30kp7d2JV3",
+    "暖墊":       "https://s.shopee.tw/7pq4sXehok",
+    "狗玩具":     "https://s.shopee.tw/7fWegEfL9j",
+    "寵物推車":   "https://s.shopee.tw/5VSA6FnaYK",
+    "寵物圍欄":   "https://s.shopee.tw/5L8jtwoDtJ",
+    "除臭噴劑":   "https://s.shopee.tw/5q50UrmJsQ",
 }
 
 # 商品資料庫（每關鍵字多個商品，避免每天重複）
@@ -136,4 +147,54 @@ PRODUCT_DATABASE = [
     {"keyword": "狗窩", "name": "防水耐抓狗狗墊 可拆洗 L號", "price_twd": 599, "sold_monthly": 2700, "rating": "4.6"},
     {"keyword": "狗窩", "name": "記憶棉寵物床墊 多尺寸 XL號", "price_twd": 899, "sold_monthly": 1800, "rating": "4.7"},
     {"keyword": "狗窩", "name": "圓形狗窩保暖抗菌款 可機洗", "price_twd": 449, "sold_monthly": 3300, "rating": "4.5"},
+
+    # 梳毛刷
+    {"keyword": "梳毛刷", "name": "寵物除毛梳雙面針梳 貓狗通用", "price_twd": 199, "sold_monthly": 4200, "rating": "4.7"},
+    {"keyword": "梳毛刷", "name": "自清式寵物梳毛刷 按壓除毛款", "price_twd": 299, "sold_monthly": 3100, "rating": "4.8"},
+    {"keyword": "梳毛刷", "name": "橡膠除毛手套梳 貓咪按摩梳", "price_twd": 159, "sold_monthly": 5600, "rating": "4.6"},
+
+    # 指甲剪
+    {"keyword": "指甲剪", "name": "寵物指甲剪貓狗專用 附銼刀", "price_twd": 149, "sold_monthly": 3800, "rating": "4.6"},
+    {"keyword": "指甲剪", "name": "LED燈寵物指甲剪 安全防剪過深", "price_twd": 299, "sold_monthly": 2100, "rating": "4.8"},
+    {"keyword": "指甲剪", "name": "電動磨甲器 靜音寵物磨爪機", "price_twd": 399, "sold_monthly": 1800, "rating": "4.7"},
+
+    # 寵物牙膏
+    {"keyword": "寵物牙膏", "name": "寵物牙膏牙刷組 雞肉口味貓狗用", "price_twd": 199, "sold_monthly": 2900, "rating": "4.6"},
+    {"keyword": "寵物牙膏", "name": "指套牙刷寵物潔牙組 3入", "price_twd": 149, "sold_monthly": 3400, "rating": "4.5"},
+    {"keyword": "寵物牙膏", "name": "天然酵素寵物牙膏 無氟配方 60g", "price_twd": 249, "sold_monthly": 2200, "rating": "4.7"},
+
+    # 尿布墊
+    {"keyword": "尿布墊", "name": "寵物尿布墊超吸收 L號 50入", "price_twd": 299, "sold_monthly": 6800, "rating": "4.7"},
+    {"keyword": "尿布墊", "name": "可洗式寵物尿墊 防水四層 XL號", "price_twd": 399, "sold_monthly": 3200, "rating": "4.6"},
+    {"keyword": "尿布墊", "name": "炭黑除臭尿布墊 狗狗如廁訓練墊 100入", "price_twd": 499, "sold_monthly": 4100, "rating": "4.8"},
+
+    # 寵物雨衣
+    {"keyword": "寵物雨衣", "name": "狗狗雨衣四腳防水反光款 M號", "price_twd": 349, "sold_monthly": 2300, "rating": "4.6"},
+    {"keyword": "寵物雨衣", "name": "透明帽寵物雨衣 一件式好穿脫", "price_twd": 249, "sold_monthly": 3100, "rating": "4.5"},
+    {"keyword": "寵物雨衣", "name": "加厚防風寵物雨衣 柴犬法鬥款", "price_twd": 499, "sold_monthly": 1700, "rating": "4.7"},
+
+    # 暖墊
+    {"keyword": "暖墊", "name": "寵物電熱毯USB加熱保暖墊 自動恆溫", "price_twd": 599, "sold_monthly": 2800, "rating": "4.7"},
+    {"keyword": "暖墊", "name": "自發熱寵物保暖墊 不需插電 M號", "price_twd": 299, "sold_monthly": 4200, "rating": "4.5"},
+    {"keyword": "暖墊", "name": "記憶棉加熱寵物床墊 四季通用 L號", "price_twd": 799, "sold_monthly": 1900, "rating": "4.8"},
+
+    # 狗玩具
+    {"keyword": "狗玩具", "name": "狗狗耐咬磨牙玩具 天然橡膠 M號", "price_twd": 199, "sold_monthly": 5300, "rating": "4.6"},
+    {"keyword": "狗玩具", "name": "益智漏食球 狗狗慢食訓練玩具", "price_twd": 249, "sold_monthly": 3800, "rating": "4.7"},
+    {"keyword": "狗玩具", "name": "發聲玩具組 狗狗毛絨玩偶 3件組", "price_twd": 299, "sold_monthly": 4100, "rating": "4.5"},
+
+    # 寵物推車
+    {"keyword": "寵物推車", "name": "折疊寵物推車四輪避震 15kg以下", "price_twd": 1999, "sold_monthly": 1200, "rating": "4.7"},
+    {"keyword": "寵物推車", "name": "太空艙寵物推車透明款 貓狗通用", "price_twd": 2499, "sold_monthly": 800, "rating": "4.8"},
+    {"keyword": "寵物推車", "name": "輕量鋁合金寵物推車 單手收折款", "price_twd": 2999, "sold_monthly": 600, "rating": "4.9"},
+
+    # 寵物圍欄
+    {"keyword": "寵物圍欄", "name": "寵物圍欄8片組 可自由組合擴充", "price_twd": 799, "sold_monthly": 2600, "rating": "4.6"},
+    {"keyword": "寵物圍欄", "name": "加高寵物柵欄 防跳脫款 120cm", "price_twd": 1299, "sold_monthly": 1500, "rating": "4.7"},
+    {"keyword": "寵物圍欄", "name": "木質寵物圍欄 北歐風室內狗柵欄", "price_twd": 1599, "sold_monthly": 1100, "rating": "4.8"},
+
+    # 除臭噴劑
+    {"keyword": "除臭噴劑", "name": "寵物除臭噴劑 天然酵素消臭 500ml", "price_twd": 249, "sold_monthly": 4500, "rating": "4.7"},
+    {"keyword": "除臭噴劑", "name": "貓咪尿液除臭噴霧 地毯布面專用", "price_twd": 299, "sold_monthly": 3200, "rating": "4.8"},
+    {"keyword": "除臭噴劑", "name": "寵物空間除臭芳香噴劑 薰衣草香", "price_twd": 199, "sold_monthly": 3800, "rating": "4.5"},
 ]
