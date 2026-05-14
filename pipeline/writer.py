@@ -111,7 +111,7 @@ def generate_article(product: dict, client, index: int = 1) -> dict:
 只輸出 HTML 內容本身，不要包含 ```html 標記。"""
 
     message = client.messages.create(
-        model="claude-haiku-3-5-20241022",
+        model="claude-3-5-haiku-20241022",
         max_tokens=2000,
         messages=[{"role": "user", "content": prompt}],
     )
