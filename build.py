@@ -31,27 +31,35 @@ KEYWORD_LABELS = {
     "寵物碗": "飲食用具", "自動餵食器": "智能用品",
 }
 
-# Unsplash 免費圖片（依關鍵字分類）
+# 圖片來源：picsum.photos（保證有圖）+ 貓狗主題 Unsplash（已驗證 ID）
+_CAT1  = "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80"  # 橘貓大眼
+_CAT2  = "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=450&fit=crop&q=80"  # 貓咪坐姿
+_CAT3  = "https://images.unsplash.com/photo-1561948955-570b270e7c36?w=800&h=450&fit=crop&q=80"  # 貓咪臉部
+_DOG1  = "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&q=80"  # 黃金獵犬
+_DOG2  = "https://images.unsplash.com/photo-1552053831-71594a27632d?w=800&h=450&fit=crop&q=80"  # 黃金幼犬
+_DOG3  = "https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=800&h=450&fit=crop&q=80"  # 狗狗戶外
+_PET   = "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&h=450&fit=crop&q=80"  # 貓狗合照
+
 KEYWORD_IMAGES = {
-    "貓砂":      "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&h=450&fit=crop&auto=format&q=80",
-    "貓糧":      "https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80",
-    "貓零食":    "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80",
-    "貓咪罐頭":  "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80",
-    "貓抓板":    "https://images.unsplash.com/photo-1615789591457-74a63395c990?w=800&h=450&fit=crop&auto=format&q=80",
-    "貓窩":      "https://images.unsplash.com/photo-1506146332389-18140dc7b2fb?w=800&h=450&fit=crop&auto=format&q=80",
-    "狗糧":      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
-    "狗零食":    "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
-    "狗罐頭":    "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
-    "狗狗牽繩":  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=450&fit=crop&auto=format&q=80",
-    "狗窩":      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
-    "寵物玩具":  "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=800&h=450&fit=crop&auto=format&q=80",
-    "寵物外出包": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=450&fit=crop&auto=format&q=80",
-    "寵物洗毛精": "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&auto=format&q=80",
-    "寵物保健":  "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80",
-    "寵物碗":    "https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80",
-    "自動餵食器": "https://images.unsplash.com/photo-1548767797-d8c844163c4a?w=800&h=450&fit=crop&auto=format&q=80",
+    "貓砂":      _CAT1,
+    "貓糧":      _CAT2,
+    "貓零食":    _CAT1,
+    "貓咪罐頭":  _CAT3,
+    "貓抓板":    _CAT2,
+    "貓窩":      _CAT1,
+    "狗糧":      _DOG1,
+    "狗零食":    _DOG2,
+    "狗罐頭":    _DOG1,
+    "狗狗牽繩":  _DOG3,
+    "狗窩":      _DOG2,
+    "寵物玩具":  _CAT3,
+    "寵物外出包": _CAT2,
+    "寵物洗毛精": _DOG1,
+    "寵物保健":  _PET,
+    "寵物碗":    _CAT1,
+    "自動餵食器": _DOG1,
 }
-DEFAULT_IMAGE = "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&auto=format&q=80"
+DEFAULT_IMAGE = _CAT1
 
 KEYWORD_SLUG = {
     "貓砂":"cat-litter", "貓糧":"cat-food", "貓零食":"cat-snack",
