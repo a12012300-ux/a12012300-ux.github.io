@@ -31,35 +31,43 @@ KEYWORD_LABELS = {
     "寵物碗": "飲食用具", "自動餵食器": "智能用品",
 }
 
-# 圖片來源：picsum.photos（保證有圖）+ 貓狗主題 Unsplash（已驗證 ID）
-_CAT1  = "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80"  # 橘貓大眼
-_CAT2  = "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=450&fit=crop&q=80"  # 貓咪坐姿
-_CAT3  = "https://images.unsplash.com/photo-1561948955-570b270e7c36?w=800&h=450&fit=crop&q=80"  # 貓咪臉部
-_DOG1  = "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&q=80"  # 黃金獵犬
-_DOG2  = "https://images.unsplash.com/photo-1552053831-71594a27632d?w=800&h=450&fit=crop&q=80"  # 黃金幼犬
-_DOG3  = "https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=800&h=450&fit=crop&q=80"  # 狗狗戶外
-_PET   = "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&h=450&fit=crop&q=80"  # 貓狗合照
+# 已驗證的 Unsplash 圖片池（20 張，確保每篇文章圖片不重複）
+IMAGE_POOL = [
+    "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80",  # 橘貓大眼
+    "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&q=80",  # 黃金獵犬
+    "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=450&fit=crop&q=80",  # 貓咪坐姿
+    "https://images.unsplash.com/photo-1552053831-71594a27632d?w=800&h=450&fit=crop&q=80",  # 黃金幼犬
+    "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800&h=450&fit=crop&q=80",  # 貓狗合照
+    "https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?w=800&h=450&fit=crop&q=80",  # 熟睡貓咪
+    "https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=800&h=450&fit=crop&q=80",  # 狗狗戶外
+    "https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=800&h=450&fit=crop&q=80",  # 灰色幼貓
+    "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=800&h=450&fit=crop&q=80",  # 小狗趴著
+    "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=800&h=450&fit=crop&q=80",  # 白貓
+    "https://images.unsplash.com/photo-1518791841217-8f162f1912da?w=800&h=450&fit=crop&q=80",  # 貓咪看鏡頭
+    "https://images.unsplash.com/photo-1543466835-00a7fe58f43d?w=800&h=450&fit=crop&q=80",  # 虎斑貓
+    "https://images.unsplash.com/photo-1561948955-570b270e7c36?w=800&h=450&fit=crop&q=80",  # 貓咪臉部
+    "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&h=450&fit=crop&q=80",  # 兩隻狗
+    "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=800&h=450&fit=crop&q=80",  # 柴犬
+    "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&h=450&fit=crop&q=80",  # 貓咪玩耍
+    "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=800&h=450&fit=crop&q=80",  # 貓咪床上
+    "https://images.unsplash.com/photo-1601979031925-424e53b6caaa?w=800&h=450&fit=crop&q=80",  # 橘貓睡覺
+    "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&q=80",  # 黃金（備用）
+    "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80",  # 橘貓（備用）
+]
 
-KEYWORD_IMAGES = {
-    "貓砂":      _CAT1,
-    "貓糧":      _CAT2,
-    "貓零食":    _CAT1,
-    "貓咪罐頭":  _CAT3,
-    "貓抓板":    _CAT2,
-    "貓窩":      _CAT1,
-    "狗糧":      _DOG1,
-    "狗零食":    _DOG2,
-    "狗罐頭":    _DOG1,
-    "狗狗牽繩":  _DOG3,
-    "狗窩":      _DOG2,
-    "寵物玩具":  _CAT3,
-    "寵物外出包": _CAT2,
-    "寵物洗毛精": _DOG1,
-    "寵物保健":  _PET,
-    "寵物碗":    _CAT1,
-    "自動餵食器": _DOG1,
-}
-DEFAULT_IMAGE = _CAT1
+# 依文章標題 hash 選圖，確保同一篇永遠同一張、不同篇盡量不重複
+def pick_image(title: str) -> str:
+    idx = int(hashlib.md5(title.encode()).hexdigest(), 16) % len(IMAGE_POOL)
+    return IMAGE_POOL[idx]
+
+DEFAULT_IMAGE = IMAGE_POOL[0]
+
+# 關鍵字圖片對照（給 index.html card 用，每關鍵字固定一張）
+KEYWORD_IMAGES = {kw: IMAGE_POOL[i % len(IMAGE_POOL)] for i, kw in enumerate([
+    "貓砂","貓糧","貓零食","貓咪罐頭","貓抓板","貓窩",
+    "狗糧","狗零食","狗罐頭","狗狗牽繩","狗窩",
+    "寵物玩具","寵物外出包","寵物洗毛精","寵物保健","寵物碗","自動餵食器",
+])}
 
 KEYWORD_SLUG = {
     "貓砂":"cat-litter", "貓糧":"cat-food", "貓零食":"cat-snack",
@@ -128,7 +136,7 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     filename = f"{kw_slug}-{uid}.html"
     date_str = datetime.now().strftime("%Y-%m-%d")
 
-    image_url = KEYWORD_IMAGES.get(keyword, DEFAULT_IMAGE)
+    image_url = pick_image(title)  # 依標題 hash 選圖，每篇不同
     read_time = calc_read_time(content)
 
     # GEO：從內文擷取重點摘要句
@@ -197,7 +205,7 @@ def update_index(articles_meta: list):
 
     cards_html = ""
     for a in sorted(articles_meta, key=lambda x: x['date'], reverse=True):
-        img = a.get('image_url', DEFAULT_IMAGE)
+        img = a.get('image_url') or pick_image(a['title'])
         price = a.get('price', '')
         rating = a.get('rating', '4.8')
         read_time = a.get('read_time', 3)
@@ -210,7 +218,7 @@ def update_index(articles_meta: list):
         cards_html += f"""
     <div class="card">
       <a href="posts/{a['filename']}" class="card-img-link">
-        <img src="{img}" alt="{a['title']}" loading="lazy" class="card-img">
+        <img src="{img}" alt="{a['title']}" loading="lazy" class="card-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80'">
       </a>
       <div class="card-body">
         <span class="card-tag">{a['label']}</span>
