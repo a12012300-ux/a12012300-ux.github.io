@@ -1,0 +1,83 @@
+name: 每日自動發文
+
+on:
+  schedule:
+    # 每天台灣時間 09:00 執行（UTC 01:00）
+    - cron: '0 1 * * *'
+  # 允許手動從 GitHub 網頁觸發
+  workflow_dispatch:
+    inputs:
+      articles_count:
+        description: '今天要發幾篇文章（預設5篇）'
+        required: false
+        default: '5'
+
+jobs:
+  daily-post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 需要 push 權限
+
+    steps:
+    # ── 步驟1：取得最新程式碼 ──────────────────────────────
+    - name: 📥 取得最新程式碼
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    # ── 步驟2：設定 Python 環境 ───────────────────────────
+    - name: 🐍 設定 Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    # ── 步驟3：安裝套件 ────────────────────────────────────
+    - name: 📦 安裝必要套件
+      run: pip install anthropic requests
+
+    # ── 步驟4：用 Claude AI 生成今日文章 ─────────────────────
+    - name: ✍️ AI 生成今日評測文章
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        ARTICLES_PER_DAY: ${{ github.event.inputs.articles_count || '5' }}
+      run: python pipeline/writer.py
+
+    # ── 步驟5：建站（套用模板、更新首頁、更新 Sitemap）─────
+    - name: 🏗️ 建站（套用模板 + 更新首頁）
+      run: python build.py
+
+    # ── 步驟6：提交並推送到 GitHub Pages ──────────────────
+    - name: 🚀 推送到 GitHub Pages
+      run: |
+        git config user.name  "毛孩研究室 Bot 🐾"
+        git config user.email "bot@maohao.tw"
+        git add -A
+        # 如果沒有變更就跳過 commit
+        if git diff --staged --quiet; then
+          echo "今天沒有新文章，跳過推送"
+        else
+          git commit -m "🤖 自動發文 $(date '+%Y-%m-%d') — $(git diff --staged --name-only | grep '\.html' | wc -l | tr -d ' ') 篇新文章"
+          git push
+          echo "✅ 推送成功！"
+        fi
+
+    # ── 步驟7：發布到 Threads + Instagram ─────────────────
+    - name: 📱 發布到社群媒體
+      env:
+        IG_USER_ID:           ${{ secrets.IG_USER_ID }}
+        IG_ACCESS_TOKEN:      ${{ secrets.IG_ACCESS_TOKEN }}
+        THREADS_USER_ID:      ${{ secrets.THREADS_USER_ID }}
+        THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+        SOCIAL_POSTS_PER_DAY: '3'
+      run: python pipeline/social.py
+
+    # ── 步驟8：顯示今日摘要 ──────────────────────────────
+    - name: 📊 今日摘要
+      run: |
+        echo "=================================================="
+        echo "  毛孩研究室 每日自動化完成"
+        echo "  日期：$(date '+%Y-%m-%d %H:%M UTC')"
+        ARTICLE_COUNT=$(find posts -name "*.html" | wc -l | tr -d ' ')
+        echo "  累積文章數：$ARTICLE_COUNT 篇"
+        echo "=================================================="

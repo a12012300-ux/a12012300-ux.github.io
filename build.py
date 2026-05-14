@@ -17,9 +17,16 @@ from datetime import datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
-ARTICLES_SRC = Path("D:/AI/pet-affiliate/output/articles")
+# 支援兩種來源：本機 pet-affiliate 目錄、或 GitHub Actions 的 pipeline 目錄
+_local_src  = Path("D:/AI/pet-affiliate/output/articles")
+_cloud_src  = BASE_DIR / "pipeline/output/articles"
+ARTICLES_SRC = _local_src if _local_src.exists() else _cloud_src
+
+_local_data  = Path("D:/AI/pet-affiliate/output/data")
+_cloud_data  = BASE_DIR / "pipeline/output/data"
+SUMMARY_DIR  = _local_data if _local_data.exists() else _cloud_data
+
 ARTICLES_DST = BASE_DIR / "posts"
-SUMMARY_DIR = Path("D:/AI/pet-affiliate/output/data")
 
 KEYWORD_LABELS = {
     "貓砂": "貓咪日常", "貓糧": "貓咪飲食", "貓零食": "貓咪零食",
