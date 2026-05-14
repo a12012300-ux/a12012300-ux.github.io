@@ -13,8 +13,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from pipeline.config import (
     ANTHROPIC_API_KEY, ARTICLES_PER_DAY,
-    SHOPEE_AFFILIATE_LINKS, MOMO_AFFILIATE_LINKS, PRODUCT_DATABASE,
-    ARTICLES_DIR, DATA_DIR
+    SHOPEE_AFFILIATE_LINKS, MOMO_AFFILIATE_LINKS, PCHOME_AFFILIATE_LINKS,
+    PRODUCT_DATABASE, ARTICLES_DIR, DATA_DIR
 )
 
 
@@ -44,11 +44,17 @@ def build_product_url(product_name: str) -> str:
 
 def get_cta_link(keyword: str, index: int) -> tuple:
     """
-    雙平台輪流：奇數篇用蝦皮，偶數篇用 momo
+    三平台輪流：1,4,7...蝦皮 / 2,5,8...momo / 3,6,9...PChome
     回傳 (affiliate_url, platform_name)
     """
-    if index % 2 == 0:
-        # momo：用最接近的分類
+    platform = index % 3
+
+    if platform == 1:
+        # 蝦皮
+        return SHOPEE_AFFILIATE_LINKS.get(keyword, "https://shopee.tw"), "蝦皮"
+
+    elif platform == 2:
+        # momo
         if "貓" in keyword:
             return MOMO_AFFILIATE_LINKS.get("貓咪用品", MOMO_AFFILIATE_LINKS["寵物用品"]), "momo"
         elif "狗" in keyword:
@@ -57,8 +63,15 @@ def get_cta_link(keyword: str, index: int) -> tuple:
             return MOMO_AFFILIATE_LINKS.get("寵物保健品", MOMO_AFFILIATE_LINKS["寵物用品"]), "momo"
         else:
             return MOMO_AFFILIATE_LINKS["寵物用品"], "momo"
+
     else:
-        return SHOPEE_AFFILIATE_LINKS.get(keyword, "https://shopee.tw"), "蝦皮"
+        # PChome
+        if "貓" in keyword:
+            return PCHOME_AFFILIATE_LINKS.get("貓咪用品", PCHOME_AFFILIATE_LINKS["寵物用品"]), "PChome"
+        elif "狗" in keyword:
+            return PCHOME_AFFILIATE_LINKS.get("狗狗用品", PCHOME_AFFILIATE_LINKS["寵物用品"]), "PChome"
+        else:
+            return PCHOME_AFFILIATE_LINKS["寵物用品"], "PChome"
 
 
 def generate_article(product: dict, client, index: int = 1) -> dict:
