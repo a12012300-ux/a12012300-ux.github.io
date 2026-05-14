@@ -29,6 +29,11 @@ DATA_DIR      = "pipeline/output/data"
 # 部落格網址
 BLOG_BASE_URL = "https://a12012300-ux.github.io"
 
+# PChome 聯盟連結（通路王）
+PCHOME_AFFILIATE_LINKS = {
+    "寵物用品": "https://iorange.biz/3QlkI",
+}
+
 # momo 購物網聯盟連結（通路王，佣金 1.4%）
 MOMO_AFFILIATE_LINKS = {
     "寵物用品":  "https://pinkrose.info/3Qlk7",
