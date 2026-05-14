@@ -5,6 +5,11 @@ Pipeline 文章生成器（GitHub Actions 版本）
 - 儲存 HTML + 摘要 JSON，供 build.py 使用
 """
 import sys, os, json, re, hashlib
+# 確保 GitHub Actions 環境中 Unicode 輸出正常
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from datetime import datetime
 from urllib.parse import quote
 from pathlib import Path
@@ -106,7 +111,7 @@ def generate_article(product: dict, client, index: int = 1) -> dict:
 只輸出 HTML 內容本身，不要包含 ```html 標記。"""
 
     message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+        model="claude-haiku-3-5-20241022",
         max_tokens=2000,
         messages=[{"role": "user", "content": prompt}],
     )
@@ -155,6 +160,7 @@ def run_writer(top_n: int = None):
         try:
             article = generate_article(product, client, index=i)
             generated.append(article)
+            print(f"  [OK] 第 {i} 篇完成：{article['title'][:40]}")
 
             safe_name = re.sub(r'[\\/*?:"<>|]', "", product["name"][:30])
             html_path = f"{ARTICLES_DIR}/{date_str}_{i:02d}_{safe_name}.html"
@@ -172,7 +178,9 @@ def run_writer(top_n: int = None):
 </html>""")
             print(f"  ✓ {html_path}")
         except Exception as e:
-            print(f"  [!] 失敗：{e}")
+            import traceback
+            print(f"  [ERROR] Article {i} failed: {type(e).__name__}: {str(e)[:200]}")
+            traceback.print_exc()
 
     # 儲存摘要 JSON（build.py 讀取這個）
     summary_path = f"{DATA_DIR}/articles_summary_{date_str}.json"

@@ -17,6 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write   # 需要 push 權限
+    env:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: 1
 
     steps:
     # ── 步驟1：取得最新程式碼 ──────────────────────────────

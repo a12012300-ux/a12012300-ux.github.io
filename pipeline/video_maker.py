@@ -11,6 +11,12 @@ from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# 確保 Unicode 輸出正常
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 VIDEOS_DIR   = Path("pipeline/output/videos")
 DATA_DIR_PATH = Path("pipeline/output/data")
 VOICE        = "zh-TW-HsiaoChenNeural"   # 台灣女聲（免費）
@@ -322,8 +328,25 @@ def run_video_maker():
         articles = json.load(f)
 
     if not articles:
-        print("[Video] 文章列表為空，跳過")
-        return []
+        print("[Video] 文章列表為空，改用 PRODUCT_DATABASE 備用商品")
+        try:
+            from pipeline.config import PRODUCT_DATABASE
+            import hashlib
+            today = datetime.now().strftime("%Y%m%d")
+            offset = int(hashlib.md5(today.encode()).hexdigest(), 16) % len(PRODUCT_DATABASE)
+            p = PRODUCT_DATABASE[offset]
+            articles = [{
+                "title":         p["name"],
+                "keyword":       p["keyword"],
+                "price":         str(p["price_twd"]),
+                "rating":        str(p["rating"]),
+                "sold_monthly":  str(p.get("sold_monthly", "1000+")),
+                "affiliate_url": "",
+            }]
+            print(f"[Video] 備用商品：{p['name']}")
+        except Exception as e:
+            print(f"[Video] 備用商品取得失敗：{e}，跳過")
+            return []
 
     date_str  = datetime.now().strftime("%Y%m%d")
     generated = []
