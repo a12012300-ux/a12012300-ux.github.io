@@ -29,6 +29,15 @@ DATA_DIR      = "pipeline/output/data"
 # 部落格網址
 BLOG_BASE_URL = "https://a12012300-ux.github.io"
 
+# momo 購物網聯盟連結（通路王，佣金 1.4%）
+MOMO_AFFILIATE_LINKS = {
+    "寵物用品":  "https://pinkrose.info/3Qlk7",
+    "貓咪用品":  "https://adcenter.conn.tw/3QlkA",
+    "狗狗用品":  "https://greenmall.info/3QlkB",
+    "寵物食品":  "https://product.mchannles.com/3QlkC",
+    "寵物保健品": "https://greenmall.info/3QlkD",
+}
+
 # 蝦皮聯盟短連結（有佣金追蹤）
 SHOPEE_AFFILIATE_LINKS = {
     "自動餵食器": "https://s.shopee.tw/1BJAnzgFQR",

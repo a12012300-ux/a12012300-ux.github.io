@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from pipeline.config import (
     ANTHROPIC_API_KEY, ARTICLES_PER_DAY,
-    SHOPEE_AFFILIATE_LINKS, PRODUCT_DATABASE,
+    SHOPEE_AFFILIATE_LINKS, MOMO_AFFILIATE_LINKS, PRODUCT_DATABASE,
     ARTICLES_DIR, DATA_DIR
 )
 
@@ -42,9 +42,28 @@ def build_product_url(product_name: str) -> str:
     return f"https://shopee.tw/search?keyword={quote(product_name)}"
 
 
-def generate_article(product: dict, client) -> dict:
+def get_cta_link(keyword: str, index: int) -> tuple:
+    """
+    雙平台輪流：奇數篇用蝦皮，偶數篇用 momo
+    回傳 (affiliate_url, platform_name)
+    """
+    if index % 2 == 0:
+        # momo：用最接近的分類
+        if "貓" in keyword:
+            return MOMO_AFFILIATE_LINKS.get("貓咪用品", MOMO_AFFILIATE_LINKS["寵物用品"]), "momo"
+        elif "狗" in keyword:
+            return MOMO_AFFILIATE_LINKS.get("狗狗用品", MOMO_AFFILIATE_LINKS["寵物用品"]), "momo"
+        elif "保健" in keyword or "維他命" in keyword or "益生菌" in keyword:
+            return MOMO_AFFILIATE_LINKS.get("寵物保健品", MOMO_AFFILIATE_LINKS["寵物用品"]), "momo"
+        else:
+            return MOMO_AFFILIATE_LINKS["寵物用品"], "momo"
+    else:
+        return SHOPEE_AFFILIATE_LINKS.get(keyword, "https://shopee.tw"), "蝦皮"
+
+
+def generate_article(product: dict, client, index: int = 1) -> dict:
     article_link = build_product_url(product["name"])
-    cta_link = SHOPEE_AFFILIATE_LINKS.get(product["keyword"], "https://shopee.tw")
+    cta_link, platform = get_cta_link(product["keyword"], index)
 
     prompt = f"""你是一位台灣的寵物部落客，請用繁體中文寫一篇 SEO 優化的商品評測文章。
 
@@ -121,7 +140,7 @@ def run_writer(top_n: int = None):
     for i, product in enumerate(products, 1):
         print(f"\n  [{i}/{top_n}] 生成：{product['name'][:35]}...")
         try:
-            article = generate_article(product, client)
+            article = generate_article(product, client, index=i)
             generated.append(article)
 
             safe_name = re.sub(r'[\\/*?:"<>|]', "", product["name"][:30])
