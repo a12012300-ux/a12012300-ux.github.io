@@ -72,7 +72,84 @@ jobs:
         SOCIAL_POSTS_PER_DAY: '3'
       run: python pipeline/social.py
 
-    # ── 步驟8：顯示今日摘要 ──────────────────────────────
+    # ── 步驟8：寄 Email 通知（含今日 IG 貼文內容）────────
+    - name: 📧 寄送 Email 通知到手機
+      if: always()
+      env:
+        GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+        GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+      run: |
+        python - <<'PYEOF'
+        import smtplib, os, json, glob
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        from datetime import datetime
+
+        gmail_user = os.environ.get("GMAIL_USER", "")
+        gmail_pass = os.environ.get("GMAIL_APP_PASSWORD", "")
+        if not gmail_user or not gmail_pass:
+            print("未設定 Gmail，跳過通知")
+            exit(0)
+
+        # 讀取今日文章
+        files = sorted(glob.glob("pipeline/output/data/articles_summary_*.json"), reverse=True)
+        articles = json.load(open(files[0], encoding="utf-8")) if files else []
+
+        today = datetime.now().strftime("%Y-%m-%d")
+        base_url = "https://a12012300-ux.github.io"
+
+        # 組 IG 貼文內容
+        ig_posts = ""
+        for i, a in enumerate(articles[:3], 1):
+            title   = a.get("title", "")
+            keyword = a.get("keyword", "寵物")
+            aff_url = a.get("affiliate_url", "")
+            rating  = a.get("rating", "4.8")
+            price   = a.get("price", "")
+            price_text = f"NT${price} " if price else ""
+            ig_posts += f"""
+━━━━━━━━━━━━━━━━━━
+【貼文 {i}】複製以下內容貼到 IG／Threads：
+━━━━━━━━━━━━━━━━━━
+🐾 {title}
+
+剛實測了這款{price_text}{keyword}，評分 {rating}/5 ⭐
+
+詳細評測 👉 {base_url}
+蝦皮優惠 👉 {aff_url}
+
+#毛孩研究室 #{keyword} #寵物推薦 #台灣寵物
+
+"""
+
+        body = f"""毛孩研究室 每日自動發文通知
+日期：{today}
+今日共發布 {len(articles)} 篇新文章
+
+部落格連結：{base_url}
+
+{'='*40}
+📱 IG / Threads 貼文內容（直接複製貼上）
+{'='*40}
+{ig_posts}
+"""
+
+        msg = MIMEMultipart()
+        msg["From"]    = gmail_user
+        msg["To"]      = gmail_user
+        msg["Subject"] = f"🐾 毛孩研究室 {today} 今日發文通知（{len(articles)}篇）"
+        msg.attach(MIMEText(body, "plain", "utf-8"))
+
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+                s.login(gmail_user, gmail_pass)
+                s.send_message(msg)
+            print(f"✅ Email 已寄送到 {gmail_user}")
+        except Exception as e:
+            print(f"[!] Email 寄送失敗：{e}")
+        PYEOF
+
+    # ── 步驟9：顯示今日摘要 ──────────────────────────────
     - name: 📊 今日摘要
       run: |
         echo "=================================================="
