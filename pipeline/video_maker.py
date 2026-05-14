@@ -91,7 +91,7 @@ def make_slide(lines, font_path, title=None, is_title=False, is_end=False):
         big_font = title_font = body_font = tag_font = ImageFont.load_default()
 
     # 品牌標籤（右下角）
-    brand = "毛孩研究室"
+    brand = "Purrfectly cute"
     draw.text((WIDTH - 300, HEIGHT - 60), brand, fill=THEME["accent"], font=tag_font)
 
     if is_title or is_end:
@@ -160,7 +160,7 @@ def build_scenes(product: dict) -> list:
             "is_title": True,
             "lines": ["【開箱實測】", name[:18], "值不值得買？老實說！"],
             "narration": (
-                f"大家好，歡迎來到毛孩研究室！"
+                f"大家好，歡迎來到Purrfectly cute！"
                 f"今天我要幫大家實測一款超熱門的{kw}，就是「{name[:20]}」。"
                 f"這款商品在蝦皮月銷{sold}件，評分高達{rating}分，"
                 f"到底好不好用？我今天直接告訴你！"
@@ -251,7 +251,7 @@ def build_scenes(product: dict) -> list:
         },
         {
             "is_end": True,
-            "lines": ["感謝收看！", "點讚 👍  訂閱 🔔  開通知", "毛孩研究室  週週更新"],
+            "lines": ["感謝收看！", "點讚 👍  訂閱 🔔  開通知", "Purrfectly cute  週週更新"],
             "narration": (
                 f"好了，今天{kw}的評測就到這邊結束！"
                 f"如果這部影片對你有幫助，麻煩給我一個讚，"
@@ -381,7 +381,7 @@ def run_video_maker():
                 f"評分 {product['rating']}/5，月銷 {product['sold_monthly']} 件。\n\n"
                 f"🛒 蝦皮優惠連結：{product['affiliate_url']}\n"
                 f"📖 完整評測文章：https://a12012300-ux.github.io\n\n"
-                f"#毛孩研究室 #{product['keyword']} #寵物推薦 #台灣寵物 #{product['keyword']}推薦"
+                f"#Purrfectly cute #{product['keyword']} #寵物推薦 #台灣寵物 #{product['keyword']}推薦"
             ),
         })
     except Exception as e:

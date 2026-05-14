@@ -41,7 +41,7 @@ def upload_video(video_path: str, title: str, description: str, tags: list = Non
         "snippet": {
             "title":       title[:100],
             "description": description[:5000],
-            "tags":        tags or ["寵物", "毛孩研究室", "寵物評測"],
+            "tags":        tags or ["寵物", "Purrfectly cute", "寵物評測"],
             "categoryId":  "22",        # People & Blogs
             "defaultLanguage": "zh-TW",
         },
@@ -119,13 +119,13 @@ def run_youtube_uploader():
             "5:30 總結 & 訂閱",
             "",
             "─────────────────────────",
-            "🐾 毛孩研究室 每週更新寵物好物評測",
+            "🐾 Purrfectly cute 每週更新寵物好物評測",
             "喜歡的話記得點讚 👍 訂閱 🔔 開啟小鈴鐺通知！",
             "",
-            f"#{keyword} #寵物推薦 #毛孩研究室 #台灣寵物 #寵物評測 #開箱",
+            f"#{keyword} #寵物推薦 #Purrfectly cute #台灣寵物 #寵物評測 #開箱",
         ])
 
-        tags = [keyword, "寵物推薦", "毛孩研究室", "台灣寵物", "寵物評測",
+        tags = [keyword, "寵物推薦", "Purrfectly cute", "台灣寵物", "寵物評測",
                 "開箱", "寵物用品", "寵物開箱", "寵物好物"]
 
         try:
