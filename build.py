@@ -107,10 +107,13 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     price = str(summary.get('price', ''))
     rating = str(summary.get('rating', '4.8'))
 
-    # CTA 按鈕連結：用文章標題搜尋，確保商品符合文章內容
-    # （短連結可能指向不相關商品，等使用者從搜尋頁重新生成短連結後再換回）
+    # CTA 按鈕連結：優先用 summary 裡的追蹤短連結，沒有才用標題搜尋 URL
     from urllib.parse import quote as _quote
-    affiliate_url = f"https://shopee.tw/search?keyword={_quote(title)}"
+    raw_aff = summary.get('affiliate_url', '')
+    if raw_aff and ('s.shopee.tw' in raw_aff or 'shopee.tw' in raw_aff):
+        affiliate_url = raw_aff
+    else:
+        affiliate_url = f"https://shopee.tw/search?keyword={_quote(title)}"
 
     kw_slug = KEYWORD_SLUG.get(keyword, "pet-product")
     uid = hashlib.md5(title.encode()).hexdigest()[:6]
