@@ -128,10 +128,10 @@ def _fetch_shopee_img(keyword: str, name: str = "", count: int = 4) -> list:
             try:
                 search_url = (
                     "https://rtapi.ruten.com.tw/api/search/v3/index.php/core/prod"
-                    "?q=" + _q(q) + "&type=direct&start=1&limit=8&sort=rnk/dc"
+                    "?q=" + _q(q) + "&type=direct&start=1&limit=16&sort=rnk/dc"
                 )
                 rows = _req.get(search_url, headers=h, timeout=10).json().get("Rows", [])
-                ids  = ",".join(p["Id"] for p in rows[:8] if "Id" in p)
+                ids  = ",".join(p["Id"] for p in rows[:16] if "Id" in p)
                 if not ids:
                     continue
                 details = _req.get(
@@ -142,12 +142,17 @@ def _fetch_shopee_img(keyword: str, name: str = "", count: int = 4) -> list:
                     if len(results) >= count:
                         break
                     img_path = d.get("Image", "")
-                    if img_path:
-                        if img_path.startswith("http"):
-                            img_url = img_path
-                        else:
-                            img_url = "https://d.rimg.com.tw" + img_path
-                        results.append(img_url)
+                    if not img_path:
+                        continue
+                    img_url = img_path if img_path.startswith("http") \
+                              else "https://d.rimg.com.tw" + img_path
+                    # 下載檢查：過濾佔位圖（< 20KB 通常是 logo 或無圖）
+                    try:
+                        ir = _req.get(img_url, headers=h, timeout=8)
+                        if ir.status_code == 200 and len(ir.content) >= 20_000:
+                            results.append(img_url)
+                    except Exception:
+                        continue
             except Exception:
                 continue
             if len(results) >= count:
