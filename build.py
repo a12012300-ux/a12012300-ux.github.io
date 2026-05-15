@@ -96,6 +96,181 @@ KEYWORD_SLUG = {
 }
 
 
+SOCIAL_DIR = BASE_DIR / "posts" / "social"
+
+def _find_cjk_font() -> str:
+    for p in [
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJKtc-Regular.otf",
+        "C:/Windows/Fonts/msjh.ttc",
+        "C:/Windows/Fonts/mingliu.ttc",
+    ]:
+        if Path(p).exists():
+            return p
+    return ""
+
+
+def inject_images(content: str, keyword: str, article_idx: int) -> str:
+    """在每隔一個 H2 標題後插入 Unsplash 圖片，讓文章更有視覺感"""
+    count = [0]
+    pet_label = "貓咪" if "貓" in keyword else "狗狗" if "狗" in keyword else "寵物"
+
+    def after_h2(match):
+        n = count[0]
+        count[0] += 1
+        if n % 2 != 0:          # 每隔一個才插圖
+            return match.group(0)
+        img = IMAGE_POOL[(article_idx * 3 + n // 2 + 4) % len(IMAGE_POOL)]
+        return (
+            match.group(0) +
+            f'\n<figure class="article-figure">'
+            f'<img src="{img}" alt="{keyword}推薦" loading="lazy">'
+            f'<figcaption>{pet_label}好物推薦 — {keyword}精選</figcaption>'
+            f'</figure>\n'
+        )
+
+    return re.sub(r'</h2>', after_h2, content)
+
+
+def build_product_overview(title: str, image_url: str, price: str, rating: str,
+                             shopee_url: str, momo_url: str, pchome_url: str) -> str:
+    """生成文章頂部的產品快速資訊卡 HTML"""
+    try:
+        r = float(rating)
+        stars = "★" * int(r) + "☆" * (5 - int(r))
+    except:
+        stars = "★★★★☆"
+        r = 4.8
+    price_html = f'<div class="product-overview-price">NT$ {price}</div>' if price else ''
+    return f'''<div class="product-overview">
+  <img class="product-overview-img" src="{image_url}" alt="{title}" loading="lazy"
+       onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=300&h=300&fit=crop'">
+  <div class="product-overview-info">
+    <div class="product-overview-name">{title}</div>
+    <div style="margin:8px 0">
+      <span class="product-overview-stars">{stars}</span>
+      <span class="product-overview-rating">{rating}/5（買家評分）</span>
+    </div>
+    {price_html}
+    <div class="quick-buy-btns">
+      <a class="qbtn qbtn-shopee" href="{shopee_url}" target="_blank" rel="nofollow sponsored">🛒 蝦皮購物</a>
+      <a class="qbtn qbtn-momo"   href="{momo_url}"   target="_blank" rel="nofollow sponsored">📦 momo購物</a>
+      <a class="qbtn qbtn-pchome" href="{pchome_url}" target="_blank" rel="nofollow sponsored">💻 PChome</a>
+    </div>
+  </div>
+</div>'''
+
+
+def generate_social_card(title: str, keyword: str, price: str, rating: str,
+                          bg_url: str, font_path: str, out_path: Path) -> bool:
+    """生成 1080×1080 IG 社群圖文卡片"""
+    try:
+        import requests as _req, io as _io
+        from PIL import Image, ImageDraw, ImageFont, ImageFilter
+
+        SW, SH = 1080, 1080
+
+        # 背景
+        try:
+            r = _req.get(bg_url, timeout=12, headers={"User-Agent": "Mozilla/5.0"})
+            bg = Image.open(_io.BytesIO(r.content)).convert("RGB").resize((SW, SH), Image.LANCZOS)
+            bg = bg.filter(ImageFilter.GaussianBlur(radius=14))
+            bg = Image.blend(bg, Image.new("RGB", (SW, SH), (0, 0, 0)), 0.65)
+        except:
+            bg = Image.new("RGB", (SW, SH), (15, 10, 35))
+
+        draw = ImageDraw.Draw(bg)
+        try:
+            fBig   = ImageFont.truetype(font_path, 72) if font_path else ImageFont.load_default()
+            fMed   = ImageFont.truetype(font_path, 50) if font_path else ImageFont.load_default()
+            fSmall = ImageFont.truetype(font_path, 34) if font_path else ImageFont.load_default()
+        except:
+            fBig = fMed = fSmall = ImageFont.load_default()
+
+        # 頂部品牌綠色條
+        draw.rectangle([0, 0, SW, 90], fill=(45, 106, 79))
+        draw.text((SW // 2, 45), "Purrfectly cute  |  寵物好物評測",
+                  fill=(255, 255, 255), font=fSmall, anchor="mm")
+
+        # 標題（自動換行）
+        def wrap_text(txt, fnt, max_w):
+            lines, cur = [], ""
+            for ch in txt:
+                test = cur + ch
+                try:
+                    tw = draw.textlength(test, font=fnt)
+                except:
+                    tw = len(test) * 38
+                if tw > max_w:
+                    lines.append(cur)
+                    cur = ch
+                else:
+                    cur = test
+            if cur:
+                lines.append(cur)
+            return lines
+
+        title_lines = wrap_text(title[:36], fBig, SW - 80)
+        y = 140
+        for line in title_lines[:3]:
+            try:
+                tw = draw.textlength(line, font=fBig)
+            except:
+                tw = len(line) * 38
+            x = (SW - tw) // 2
+            draw.text((x + 3, y + 3), line, fill=(0, 0, 0), font=fBig)
+            draw.text((x, y), line, fill=(255, 215, 0), font=fBig)
+            y += 88
+
+        # 評分
+        try:
+            r_val = float(rating)
+            stars = "★" * int(r_val) + "☆" * (5 - int(r_val))
+        except:
+            stars = "★★★★☆"; r_val = 4.5
+        rating_str = f"{stars}  {rating} / 5"
+        try:
+            tw = draw.textlength(rating_str, font=fMed)
+        except:
+            tw = len(rating_str) * 26
+        draw.text(((SW - tw) // 2, y + 20), rating_str, fill=(255, 215, 0), font=fMed)
+        y += 90
+
+        # 價格徽章
+        if price:
+            price_txt = f"NT$ {price}"
+            pw = 260
+            draw.rectangle([(SW - pw) // 2, y, (SW + pw) // 2, y + 68], fill=(238, 77, 45), width=0)
+            try:
+                tw = draw.textlength(price_txt, font=fMed)
+            except:
+                tw = len(price_txt) * 26
+            draw.text(((SW - tw) // 2, y + 10), price_txt, fill=(255, 255, 255), font=fMed)
+            y += 90
+
+        # "值不值得買？" 提問
+        question = "值不值得買？老實說！"
+        try:
+            tw = draw.textlength(question, font=fMed)
+        except:
+            tw = len(question) * 26
+        draw.text(((SW - tw) // 2, y + 10), question, fill=(255, 255, 255), font=fMed)
+
+        # 底部網址條
+        draw.rectangle([0, SH - 72, SW, SH], fill=(27, 67, 50))
+        draw.text((SW // 2, SH - 36),
+                  "完整評測 >> a12012300-ux.github.io",
+                  fill=(178, 223, 199), font=fSmall, anchor="mm")
+
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        bg.save(str(out_path), "JPEG", quality=93)
+        return True
+    except Exception as e:
+        print(f"  [SocialCard] 生成失敗: {e}")
+        return False
+
+
 def extract_title(html: str) -> str:
     m = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
     if m:
@@ -178,6 +353,24 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
 
     image_url = pick_image(title)  # 依標題 hash 選圖，每篇不同
     read_time = calc_read_time(content)
+    article_idx = int(hashlib.md5(title.encode()).hexdigest(), 16) % 997
+
+    # 注入穿插圖片
+    content = inject_images(content, keyword, article_idx)
+
+    # 生成社群圖文卡片
+    date_str_nodash = datetime.now().strftime("%Y%m%d")
+    social_card_filename = f"{date_str_nodash}_{article_idx % 100:02d}.jpg"
+    social_card_path = SOCIAL_DIR / social_card_filename
+    font_p = _find_cjk_font()
+    social_card_ok = generate_social_card(
+        title, keyword, price, rating, image_url,
+        font_p, social_card_path
+    )
+    social_image_url = (
+        f"https://a12012300-ux.github.io/posts/social/{social_card_filename}"
+        if social_card_ok else image_url
+    )
 
     # GEO：從內文擷取重點摘要句
     sentences = re.findall(r'[^。！？\n]{15,50}[。！？]', re.sub(r'<[^>]+>', '', content))
@@ -207,6 +400,11 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     stars = "★" * int(r) + "☆" * (5 - int(r))
 
     page = template
+    # 產品資訊卡
+    product_overview_html = build_product_overview(
+        title, image_url, price, rating, shopee_url, momo_url, pchome_url
+    )
+
     page = page.replace('{{TITLE}}', title)
     page = page.replace('{{DESCRIPTION}}', description)
     page = page.replace('{{CONTENT}}', content)
@@ -215,6 +413,7 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     page = page.replace('{{SHOPEE_URL}}',  shopee_url)
     page = page.replace('{{MOMO_URL}}',    momo_url)
     page = page.replace('{{PCHOME_URL}}',  pchome_url)
+    page = page.replace('{{PRODUCT_OVERVIEW}}', product_overview_html)
     page = page.replace('{{FILENAME}}', filename)
     page = page.replace('{{DATE}}', date_str)
     page = page.replace('{{SUMMARY_POINTS}}', summary_points)
@@ -233,6 +432,7 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
         "filename": filename,
         "affiliate_url": affiliate_url,
         "image_url": image_url,
+        "social_image_url": social_image_url,
         "price": price,
         "rating": rating,
         "read_time": read_time,

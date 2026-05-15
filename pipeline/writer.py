@@ -83,32 +83,77 @@ def generate_article(product: dict, client, index: int = 1) -> dict:
     article_link = build_product_url(product["name"])
     cta_link, platform = get_cta_link(product["keyword"], index)
 
-    prompt = f"""你是一位台灣的寵物部落客，請用繁體中文寫一篇 SEO 優化的商品評測文章。
+    prompt = f"""你是台灣知名寵物部落客，請用繁體中文寫一篇高品質 SEO 評測文章。
 
 商品資訊：
 - 商品名稱：{product['name']}
 - 價格：NT${product['price_twd']}
 - 月銷量：{product['sold_monthly']} 件
 - 買家評分：{product['rating']} / 5
-- 購買連結：{article_link}
 - 搜尋關鍵字：{product['keyword']}
 
-文章需求：
-1. 標題：包含主關鍵字「{product['keyword']}」，吸引人點擊，50字以內
-2. 開頭：用飼主的痛點切入（100字）
-3. 商品介紹：重點功能、材質、規格（200字）
-4. 使用心得：模擬真實飼主角度，提到優缺點（200字）
-5. 適合對象：什麼樣的寵物/飼主最適合（100字）
-6. 購買建議：包含價格分析和購買連結，用 <a href="{article_link}">👉 蝦皮優惠價查看</a> 這個格式（100字）
-7. 文末：常見問題 FAQ（3題，每題50字）
+請生成完整 HTML 文章，結構如下（順序不變）：
+
+<h1>吸引人的標題（含關鍵字「{product['keyword']}」，50字以內）</h1>
+
+<p>開場 150 字：以真實飼主痛點切入，建立共鳴，自然帶出商品</p>
+
+<div class="spec-box">
+<h3>商品快速規格</h3>
+<table class="spec-table">
+<tr><td>商品名稱</td><td>{product['name']}</td></tr>
+<tr><td>售價</td><td>NT$ {product['price_twd']}</td></tr>
+<tr><td>月銷量</td><td>{product['sold_monthly']} 件</td></tr>
+<tr><td>買家評分</td><td>{product['rating']} / 5</td></tr>
+<tr><td>適合對象</td><td>（填入適合的寵物種類和飼主類型）</td></tr>
+<tr><td>主要材質</td><td>（填入材質說明）</td></tr>
+</table>
+</div>
+
+<h2>外觀與材質評測</h2>
+<p>180 字，描述外觀、材質質感、做工細節，真實測試者角度</p>
+
+<h2>實際使用心得</h2>
+<p>200 字，毛孩實際使用反應，測試過程，與其他商品比較</p>
+
+<div class="pros-cons">
+<div class="pros">
+<h3>優點</h3>
+<ul>
+<li>（具體優點 1）</li>
+<li>（具體優點 2）</li>
+<li>（具體優點 3，含CP值分析）</li>
+</ul>
+</div>
+<div class="cons">
+<h3>缺點</h3>
+<ul>
+<li>（需注意的缺點 1）</li>
+<li>（需注意的缺點 2）</li>
+</ul>
+</div>
+</div>
+
+<h2>適合哪種飼主？</h2>
+<p>100 字，具體描述最適合的使用情境</p>
+
+<h2>購買價格分析</h2>
+<p>120 字，與同類商品比較，分析CP值，提到蝦皮現有優惠。<br>
+👉 <a href="{cta_link}">點這裡查看蝦皮最新優惠價</a></p>
+
+<h2>常見問題 FAQ</h2>
+<h3>（問題一，含關鍵字）？</h3>
+<p>（50字解答）</p>
+<h3>（問題二，使用方式）？</h3>
+<p>（50字解答）</p>
+<h3>（問題三，選購疑問）？</h3>
+<p>（50字解答）</p>
 
 格式要求：
-- 使用 HTML 格式，包含 h1, h2, p, ul 標籤
-- 在文章中自然地出現關鍵字 5~8 次
-- 語氣親切自然，像真人部落客
-- 不要有AI感、不要有明顯廣告感
-
-只輸出 HTML 內容本身，不要包含 ```html 標記。"""
+- 只輸出 HTML body 內容，不要加 ```html 標記
+- 關鍵字「{product['keyword']}」自然出現 6~9 次
+- 語氣親切真實，像認真的飼主部落客，不要AI感
+- 優缺點要具體、誠實，不要全都是優點"""
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",

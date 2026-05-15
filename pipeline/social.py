@@ -236,14 +236,17 @@ def get_todays_articles(max_posts: int) -> list:
         meta  = meta_map.get(title, {})
         filename = meta.get("filename", "")
         post_url = f"{BLOG_BASE_URL}/posts/{filename}" if filename else BLOG_BASE_URL
+        # 優先使用 build.py 生成的社群圖片卡，fallback 用 Unsplash
+        social_img = meta.get("social_image_url") or meta.get("image_url") or \
+                     "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=800&fit=crop&q=80"
         articles.append({
-            "title":         title,
-            "keyword":       s.get("keyword", "寵物"),
-            "affiliate_url": s.get("affiliate_url", ""),
-            "price":         s.get("price", ""),
-            "rating":        s.get("rating", "4.8"),
-            "image_url":     meta.get("image_url", "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80"),
-            "post_url":      post_url,
+            "title":          title,
+            "keyword":        s.get("keyword", "寵物"),
+            "affiliate_url":  s.get("affiliate_url", ""),
+            "price":          s.get("price", ""),
+            "rating":         s.get("rating", "4.8"),
+            "image_url":      social_img,
+            "post_url":       post_url,
         })
     return articles
 
