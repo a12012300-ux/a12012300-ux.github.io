@@ -534,8 +534,18 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     filename = f"{kw_slug}-{uid}.html"
     date_str = datetime.now().strftime("%Y-%m-%d")
 
-    # 從蝦皮抓商品圖 URL（優先用真實商品圖片，更有說服力）
-    product_imgs = _fetch_shopee_img(keyword, title[:30], count=4)
+    # 從 article_link URL 解碼出真實商品名稱（最精確的搜尋詞）
+    from urllib.parse import urlparse as _urlparse, parse_qs as _parse_qs, unquote as _unquote
+    _article_link = summary.get("article_link", "")
+    if _article_link:
+        _qs = _parse_qs(_urlparse(_article_link).query)
+        product_name = _unquote(_qs.get("keyword", [""])[0])
+    else:
+        product_name = title[:30]
+    print(f"  [ProductImg] 搜尋商品名稱：{product_name}")
+
+    # 下載對應商品圖（用商品名稱精準搜尋）
+    product_imgs = _fetch_and_save_product_imgs(keyword, product_name, count=4)
     image_url = product_imgs[0] if product_imgs else pick_image(title)
 
     read_time = calc_read_time(content)
@@ -614,6 +624,7 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
         "title": title,
         "description": description,
         "keyword": keyword,
+        "product_name": product_name,
         "label": KEYWORD_LABELS.get(keyword, keyword),
         "filename": filename,
         "affiliate_url": affiliate_url,
@@ -835,8 +846,16 @@ def rebuild_all_posts():
             )
 
             # 建假 summary（讓 build_article_page 可以正確查 affiliates）
+            # 保留 product_name 讓圖片搜尋更精確
+            product_name = m.get("product_name", "")
             summary = {"keyword": keyword, "price": price, "rating": rating,
-                       "affiliate_url": aff_url, "title": title}
+                       "affiliate_url": aff_url, "title": title,
+                       "product_name": product_name,
+                       # 重建出 article_link 讓 build_article_page 解碼商品名
+                       "article_link": (
+                           f"https://shopee.tw/search?keyword={product_name}"
+                           if product_name else ""
+                       )}
 
             # 寫臨時 source HTML 供 build_article_page 解析
             import tempfile as _tf
