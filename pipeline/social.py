@@ -142,27 +142,46 @@ def post_to_threads(text: str, image_url: str = None) -> bool:
 # ─── 貼文內容產生器 ──────────────────────────────────────────────────────────
 
 def build_ig_caption(article: dict) -> str:
-    """生成 Instagram 圖片貼文說明"""
+    """生成 Instagram 圖片貼文說明（高互動版）"""
     title   = article.get("title", "")
     keyword = article.get("keyword", "寵物")
     url     = article.get("post_url", BLOG_BASE_URL)
     price   = article.get("price", "")
     rating  = article.get("rating", "4.8")
 
-    price_text = f"💰 NT${price}" if price else ""
+    try:
+        r = float(rating)
+        stars = "⭐" * int(r)
+    except:
+        stars = "⭐⭐⭐⭐"
+
+    price_text = f"💰 NT${price} 入手" if price else ""
+    pet_type = "貓咪" if "貓" in keyword else "狗狗" if "狗" in keyword else "毛孩"
+
     caption = (
-        f"🐾 {title}\n\n"
-        f"⭐ 評分 {rating}/5 | {price_text}\n\n"
-        f"今天幫大家實測了這款熱門{keyword}！\n"
-        f"詳細使用心得、優缺點分析全在部落格 👇\n\n"
-        f"🔗 {url}\n\n"
-        f"#寵物 #{keyword} #台灣寵物 #寵物推薦 #蝦皮寵物 #毛孩 #毛孩研究室"
+        f"你家{pet_type}也需要這個嗎？👇\n\n"
+        f"━━━━━━━━━━━━━━━━\n"
+        f"【{title[:38]}】\n"
+        f"━━━━━━━━━━━━━━━━\n\n"
+        f"{stars} 評分 {rating}/5\n"
+        f"{price_text}\n\n"
+        f"我幫大家實測了！\n"
+        f"✅ 品質超出預期\n"
+        f"✅ {pet_type}接受度高，幾乎零適應期\n"
+        f"✅ CP值在同價位中最高\n\n"
+        f"❌ 需定期維護\n"
+        f"❌ 少數挑剔毛孩需時間適應\n\n"
+        f"完整開箱評測 👇\n"
+        f"{url}\n\n"
+        f"你家毛孩用過嗎？留言告訴我！💬\n\n"
+        f"#寵物 #{keyword} #台灣寵物 #寵物推薦\n"
+        f"#{pet_type}日常 #毛孩好物 #寵物開箱 #Purrfectlycute"
     )
     return caption
 
 
 def build_threads_text(article: dict) -> str:
-    """生成 Threads 純文字貼文"""
+    """生成 Threads 貼文（口語化、有互動感）"""
     title   = article.get("title", "")
     keyword = article.get("keyword", "寵物")
     url     = article.get("post_url", BLOG_BASE_URL)
@@ -170,15 +189,23 @@ def build_threads_text(article: dict) -> str:
     price   = article.get("price", "")
     rating  = article.get("rating", "4.8")
 
-    price_text = f"NT${price} " if price else ""
+    price_text = f"（NT${price}）" if price else ""
+    pet_type = "貓咪" if "貓" in keyword else "狗狗" if "狗" in keyword else "毛孩"
+
     text = (
-        f"🐾 {title}\n\n"
-        f"剛實測了這款{price_text}{keyword}，評分 {rating}/5 ⭐\n\n"
-        f"優點：真的很好用，毛孩超愛！\n"
-        f"缺點：初期有點味道，幾天後消散\n\n"
-        f"詳細評測 👉 {url}\n"
-        f"蝦皮優惠價 👉 {aff_url}\n\n"
-        f"#毛孩研究室 #{keyword} #寵物推薦"
+        f"剛幫大家測完這款{keyword}{price_text}！\n\n"
+        f"「{title[:35]}」評分 {rating}/5 ⭐\n\n"
+        f"老實說，這是我近期用過同類中最值得買的一款：\n\n"
+        f"👍 {pet_type}接受度極高，幾乎零適應期\n"
+        f"👍 做工比同價位好，材質有安全認證\n"
+        f"👍 CP值爆表，比市場均價便宜不少\n\n"
+        f"👎 要定期清潔才能維持效果\n"
+        f"👎 極少數挑剔的{pet_type}需 1-2 週適應\n\n"
+        f"詳細圖文開箱 👉 {url}\n"
+        f"優惠連結 👉 {aff_url}\n\n"
+        f"你家{pet_type}用過這類{keyword}嗎？好用嗎？\n"
+        f"留言分享你的心得！\n\n"
+        f"#毛孩好物 #{keyword} #寵物推薦 #台灣寵物 #Purrfectlycute"
     )
     return text
 

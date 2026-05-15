@@ -17,6 +17,16 @@ from datetime import datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
+
+# 三平台聯盟連結
+try:
+    from pipeline.config import (
+        SHOPEE_AFFILIATE_LINKS, MOMO_AFFILIATE_LINKS, PCHOME_AFFILIATE_LINKS
+    )
+except ImportError:
+    SHOPEE_AFFILIATE_LINKS = {}
+    MOMO_AFFILIATE_LINKS   = {"寵物用品": "https://pinkrose.info/3Qlk7"}
+    PCHOME_AFFILIATE_LINKS = {"寵物用品": "https://iorange.biz/3QlkI"}
 # 支援兩種來源：本機 pet-affiliate 目錄、或 GitHub Actions 的 pipeline 目錄
 _local_src  = Path("D:/AI/pet-affiliate/output/articles")
 _cloud_src  = BASE_DIR / "pipeline/output/articles"
@@ -130,13 +140,36 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     price = str(summary.get('price', ''))
     rating = str(summary.get('rating', '4.8'))
 
-    # CTA 按鈕連結：優先用 summary 裡的追蹤短連結，沒有才用標題搜尋 URL
+    # CTA 按鈕連結：三平台各自生成
     from urllib.parse import quote as _quote
+
+    # 蝦皮
     raw_aff = summary.get('affiliate_url', '')
     if raw_aff and ('s.shopee.tw' in raw_aff or 'shopee.tw' in raw_aff):
-        affiliate_url = raw_aff
+        shopee_url = raw_aff
     else:
-        affiliate_url = f"https://shopee.tw/search?keyword={_quote(title)}"
+        shopee_url = SHOPEE_AFFILIATE_LINKS.get(keyword,
+                     f"https://shopee.tw/search?keyword={_quote(title)}")
+
+    # momo
+    if "貓" in keyword:
+        momo_url = MOMO_AFFILIATE_LINKS.get("貓咪用品", MOMO_AFFILIATE_LINKS.get("寵物用品","https://pinkrose.info/3Qlk7"))
+    elif "狗" in keyword:
+        momo_url = MOMO_AFFILIATE_LINKS.get("狗狗用品", MOMO_AFFILIATE_LINKS.get("寵物用品","https://pinkrose.info/3Qlk7"))
+    elif "保健" in keyword or "益生菌" in keyword:
+        momo_url = MOMO_AFFILIATE_LINKS.get("寵物保健品", MOMO_AFFILIATE_LINKS.get("寵物用品","https://pinkrose.info/3Qlk7"))
+    else:
+        momo_url = MOMO_AFFILIATE_LINKS.get("寵物用品", "https://pinkrose.info/3Qlk7")
+
+    # PChome
+    if "貓" in keyword:
+        pchome_url = PCHOME_AFFILIATE_LINKS.get("貓咪用品", PCHOME_AFFILIATE_LINKS.get("寵物用品","https://iorange.biz/3QlkI"))
+    elif "狗" in keyword:
+        pchome_url = PCHOME_AFFILIATE_LINKS.get("狗狗用品", PCHOME_AFFILIATE_LINKS.get("寵物用品","https://iorange.biz/3QlkI"))
+    else:
+        pchome_url = PCHOME_AFFILIATE_LINKS.get("寵物用品", "https://iorange.biz/3QlkI")
+
+    affiliate_url = shopee_url  # 保持向後相容
 
     kw_slug = KEYWORD_SLUG.get(keyword, "pet-product")
     uid = hashlib.md5(title.encode()).hexdigest()[:6]
@@ -179,6 +212,9 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     page = page.replace('{{CONTENT}}', content)
     page = page.replace('{{KEYWORD}}', KEYWORD_LABELS.get(keyword, keyword))
     page = page.replace('{{AFFILIATE_URL}}', affiliate_url)
+    page = page.replace('{{SHOPEE_URL}}',  shopee_url)
+    page = page.replace('{{MOMO_URL}}',    momo_url)
+    page = page.replace('{{PCHOME_URL}}',  pchome_url)
     page = page.replace('{{FILENAME}}', filename)
     page = page.replace('{{DATE}}', date_str)
     page = page.replace('{{SUMMARY_POINTS}}', summary_points)

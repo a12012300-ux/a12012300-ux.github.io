@@ -121,9 +121,13 @@ article a{color:#2d6a4f;font-weight:500}
 article a:hover{text-decoration:underline}
 article img{max-width:100%;border-radius:10px;margin:16px 0;box-shadow:0 2px 10px rgba(0,0,0,.1)}
 .cta-box{background:linear-gradient(135deg,#d8f3dc,#b7e4c7);border-radius:14px;padding:24px 28px;margin:36px 0;text-align:center;border:1px solid #95d5b2}
-.cta-box p{margin-bottom:14px;font-weight:600;color:#1b4332;font-size:1.05em}
-.cta-btn{display:inline-block;background:#2d6a4f;color:white;text-decoration:none;padding:14px 32px;border-radius:10px;font-size:1em;font-weight:700;transition:all .2s;box-shadow:0 3px 10px rgba(45,106,79,.3)}
-.cta-btn:hover{background:#1b4332;transform:translateY(-1px);box-shadow:0 5px 15px rgba(45,106,79,.4)}
+.cta-box p{margin-bottom:16px;font-weight:600;color:#1b4332;font-size:1.05em}
+.cta-buttons{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.cta-btn{display:inline-block;color:white;text-decoration:none;padding:13px 26px;border-radius:10px;font-size:.95em;font-weight:700;transition:all .2s;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 5px 16px rgba(0,0,0,.3);opacity:.92}
+.btn-shopee{background:#ee4d2d}
+.btn-momo{background:#cc0033}
+.btn-pchome{background:#0052cc}
 .author-card{display:flex;align-items:center;gap:14px;background:white;border:1px solid #eee;border-radius:12px;padding:16px 20px;margin:36px 0 24px}
 .author-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#2d6a4f,#52b788);display:flex;align-items:center;justify-content:center;font-size:1.4em;flex-shrink:0}
 .author-info h3{font-size:.95em;color:#1b4332;margin-bottom:3px}
@@ -180,8 +184,12 @@ footer a{color:#2d6a4f;text-decoration:none}
   </article>
 
   <div class="cta-box">
-    <p>📦 想買這個商品？現在蝦皮有優惠！</p>
-    <a class="cta-btn" href="{{AFFILIATE_URL}}" target="_blank" rel="nofollow sponsored">👉 蝦皮查看最新價格</a>
+    <p>🛒 三大平台比價，找最划算的！</p>
+    <div class="cta-buttons">
+      <a class="cta-btn btn-shopee" href="{{SHOPEE_URL}}" target="_blank" rel="nofollow sponsored">🛒 蝦皮購物</a>
+      <a class="cta-btn btn-momo"   href="{{MOMO_URL}}"   target="_blank" rel="nofollow sponsored">📦 momo購物</a>
+      <a class="cta-btn btn-pchome" href="{{PCHOME_URL}}" target="_blank" rel="nofollow sponsored">💻 PChome</a>
+    </div>
   </div>
 
   <div class="author-card">

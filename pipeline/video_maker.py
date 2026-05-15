@@ -41,14 +41,6 @@ KW_EN = {
     "益生菌":"healthy happy cat","洗毛精":"cat bath fluffy",
     "寵物":"cute pet home happy",
 }
-BROLL_VARIANTS = [
-    "{kw} close up portrait",
-    "happy {pet} home",
-    "{pet} playing indoor",
-    "{pet} cute funny",
-    "{kw} best quality",
-]
-
 def kw2en(kw: str) -> str:
     for zh, en in KW_EN.items():
         if zh in kw: return en
@@ -63,6 +55,40 @@ def pet_type(kw: str) -> str:
 # ════════════════════════════════════════════════════════════
 #  圖片抓取（多張，不同查詢）
 # ════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
+#  可靠圖片庫（Unsplash 固定 Photo ID，不依賴重定向 API）
+# ════════════════════════════════════════════════════════════
+_UB = "https://images.unsplash.com/photo-"
+CAT_PHOTOS = [
+    "1574158622682-e40e69881006","1514888286974-6c03e2ca1dba",
+    "1533743983669-94fa5c4338ec","1543466835-00a7fe58f43d",
+    "1561948955-570b270e7c36", "1592194996308-7b43878e84a6",
+    "1601979031925-424e53b6caaa","1518791841217-8f162f1912da",
+    "1583511655857-d19b40a7a54e","1425082661705-1834bfd09dca",
+    "1495360010541-f48722b34f7d","1537151625747-768eb6cf92b2",
+]
+DOG_PHOTOS = [
+    "1587300003388-59208cc962cb","1552053831-71594a27632d",
+    "1477884213360-7e9d7dcc1e48","1537151625747-768eb6cf92b2",
+    "1548199973-03cce0bbc87b", "1517849845537-4d257902454a",
+    "1450778869180-41d0601e046e","1453227588063-bb302b62f50b",
+    "1534361960057-19f073085157","1548767797-d8c844163ef4",
+]
+PET_PHOTOS = CAT_PHOTOS + DOG_PHOTOS
+
+def _photo_url(pid: str, w: int = 1920, h: int = 1080) -> str:
+    return f"{_UB}{pid}?w={w}&h={h}&fit=crop&q=80"
+
+def _dl(url: str) -> bytes | None:
+    try:
+        import requests
+        r = requests.get(url, timeout=20, headers={"User-Agent": "Mozilla/5.0"})
+        if r.status_code == 200 and len(r.content) > 15000:
+            return r.content
+    except Exception as e:
+        print(f"    [Img] 下載失敗: {e}")
+    return None
+
 def shopee_img(keyword: str) -> bytes | None:
     try:
         import requests
@@ -82,42 +108,34 @@ def shopee_img(keyword: str) -> bytes | None:
         print(f"  [Shopee] {e}")
     return None
 
-def unsplash_img(query: str, w: int = 1920, h: int = 1080) -> bytes | None:
-    try:
-        import requests
-        r = requests.get(f"https://source.unsplash.com/{w}x{h}/?{quote(query)}",
-                         timeout=15, allow_redirects=True)
-        if r.status_code == 200 and len(r.content) > 20000:
-            return r.content
-    except: pass
-    return None
-
-def fetch_broll_images(keyword: str, count: int = 4) -> list[bytes]:
-    """抓多張不同的寵物圖作為 B-roll 素材"""
-    import time
-    results = []
+def fetch_broll_images(keyword: str, count: int = 4) -> list:
+    """抓多張不同的寵物圖作為 B-roll（固定 Unsplash Photo ID，100% 可靠）"""
     pt = pet_type(keyword)
-    queries = [
-        kw2en(keyword),
-        f"cute {pt} portrait",
-        f"happy {pt} indoor home",
-        f"{pt} playing funny",
-        f"{pt} adorable close up",
-    ]
-    for q in queries[:count]:
-        img = unsplash_img(q)
-        if img:
-            results.append(img)
-        else:
-            results.append(None)
-        time.sleep(0.3)  # 避免被限速
+    pool = CAT_PHOTOS if pt == "cat" else DOG_PHOTOS if pt == "dog" else PET_PHOTOS
+    results = []
+    for i in range(count):
+        pid = pool[i % len(pool)]
+        img = _dl(_photo_url(pid))
+        results.append(img)
+        status = "OK" if img else "失敗→漸層替代"
+        print(f"    [Img] B-roll {i+1}/{count} {status}")
     return results
 
 def get_product_img(keyword: str, name: str = "") -> bytes | None:
+    """取得商品圖：先試蝦皮 API，失敗則用 Unsplash 寵物圖"""
     for q in ([name[:30]] if name else []) + [keyword]:
         img = shopee_img(q)
-        if img: return img
-    return unsplash_img(kw2en(keyword))
+        if img:
+            print(f"    [Img] 蝦皮商品圖 OK")
+            return img
+    pt = pet_type(keyword)
+    pool = CAT_PHOTOS if pt == "cat" else DOG_PHOTOS if pt == "dog" else PET_PHOTOS
+    for pid in pool[:4]:
+        img = _dl(_photo_url(pid, 800, 800))
+        if img:
+            print(f"    [Img] Unsplash fallback OK")
+            return img
+    return None
 
 
 # ════════════════════════════════════════════════════════════
@@ -134,6 +152,21 @@ def find_font() -> str:
     ]:
         if Path(p).exists(): return p
     return ""
+
+
+# ════════════════════════════════════════════════════════════
+#  Emoji 移除（Linux NotoSansCJK 不含彩色 emoji glyph）
+# ════════════════════════════════════════════════════════════
+import re as _re
+_EMOJI_RE = _re.compile(
+    r'[\U0001F300-\U0001FAFF'   # 表情符號主範圍
+    r'\U00002700-\U000027BF'    # Dingbats（含 ✅ ❌）
+    r'⭐⭕'             # ⭐ ⭕
+    r']+'
+)
+def strip_emoji(text: str) -> str:
+    """移除無法在 Linux Noto CJK 字型中顯示的 emoji"""
+    return _EMOJI_RE.sub("", text).strip()
 
 
 # ════════════════════════════════════════════════════════════
@@ -267,9 +300,9 @@ def motion_clip(img_bytes: bytes | None, duration: float,
         draw_obj.text((x+2, y+2), txt, fill=(0,0,0,200), font=fnt)
         draw_obj.text((x, y),    txt, fill=col,           font=fnt)
 
-    _center(text_main, fL, HEIGHT * 3 // 4 - 58, (255, 215, 0, 255), od)
+    _center(strip_emoji(text_main), fL, HEIGHT * 3 // 4 - 58, (255, 215, 0, 255), od)
     if text_sub:
-        _center(text_sub, fS, HEIGHT * 3 // 4 + 36, (255, 255, 255, 220), od)
+        _center(strip_emoji(text_sub), fS, HEIGHT * 3 // 4 + 36, (255, 255, 255, 220), od)
     od.text((WIDTH-22, HEIGHT-15), "Purrfectly cute",
             fill=(180,180,180,200), font=fWM, anchor="rb")
 
@@ -339,15 +372,16 @@ def product_slide(bg_bytes, prod_bytes, lines, font_path,
         y_pos = HEIGHT//2-115
         for i, line in enumerate(lines):
             font = fH if i==0 else fT
+            disp = strip_emoji(line)
             try:
-                bbox = draw.textbbox((0,0), line, font=font)
+                bbox = draw.textbbox((0,0), disp, font=font)
                 tw = bbox[2]-bbox[0]
             except Exception:
-                tw = len(line)*44
+                tw = len(disp)*44
             x = (WIDTH-tw)//2
-            draw.text((x+3, y_pos+3), line, fill=(0,0,0), font=font)
+            draw.text((x+3, y_pos+3), disp, fill=(0,0,0), font=font)
             col = (255,215,0) if i==0 else (255,255,255)
-            draw.text((x, y_pos), line, fill=col, font=font)
+            draw.text((x, y_pos), disp, fill=col, font=font)
             y_pos += 110
     else:
         # 左側遮罩
@@ -379,23 +413,26 @@ def product_slide(bg_bytes, prod_bytes, lines, font_path,
         # 標題列
         y_pos = 48
         if title:
+            disp_title = strip_emoji(title)
             try:
-                bbox = draw.textbbox((0,0), title, font=fT)
+                bbox = draw.textbbox((0,0), disp_title, font=fT)
                 th = bbox[3]-bbox[1]
             except Exception:
                 th = 64
             draw.rectangle([0, y_pos-10, tw_mask+45, y_pos+th+14], fill=(175,125,0))
-            draw.text((52, y_pos), title, fill=(255,255,255), font=fT)
+            draw.text((52, y_pos), disp_title, fill=(255,255,255), font=fT)
             y_pos += th+50
 
         for line in lines:
-            if not line.strip(): y_pos+=20; continue
+            raw  = line
+            disp = strip_emoji(raw)
+            if not disp.strip(): y_pos+=20; continue
             col=(240,240,240)
-            if line.startswith("✅"): col=(80,255,140)
-            elif line.startswith("❌"): col=(255,100,100)
-            elif line.startswith(("💰","👉","🔔","⭐","•")): col=(255,215,60)
-            draw.text((56, y_pos+2), line, fill=(0,0,0), font=fB)
-            draw.text((55, y_pos),   line, fill=col,     font=fB)
+            if "✅" in raw: col=(80,255,140)
+            elif "❌" in raw: col=(255,100,100)
+            elif any(c in raw for c in "💰👉🔔⭐•"): col=(255,215,60)
+            draw.text((56, y_pos+2), disp, fill=(0,0,0), font=fB)
+            draw.text((55, y_pos),   disp, fill=col,     font=fB)
             y_pos += 68
 
     return np.array(bg)
