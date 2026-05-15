@@ -111,21 +111,66 @@ def _find_cjk_font() -> str:
     return ""
 
 
-def inject_images(content: str, keyword: str, article_idx: int) -> str:
-    """在每隔一個 H2 標題後插入 Unsplash 圖片，讓文章更有視覺感"""
+def _fetch_shopee_img(keyword: str, name: str = "", count: int = 4) -> list:
+    """從蝦皮搜尋商品，返回 CDN 圖片 URL 列表（最多 count 個）"""
+    results = []
+    try:
+        import requests as _req
+        from urllib.parse import quote as _q
+        h = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120",
+            "referer": "https://shopee.tw/",
+        }
+        for q in ([name[:30]] if name else []) + [keyword]:
+            api_url = (
+                f"https://shopee.tw/api/v4/search/search_items"
+                f"?by=relevancy&keyword={_q(q)}&limit=10&newest=0"
+                f"&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2"
+            )
+            try:
+                resp  = _req.get(api_url, headers=h, timeout=12)
+                items = resp.json().get("items", [])
+            except Exception:
+                continue
+            for item in items[:10]:
+                if len(results) >= count:
+                    break
+                img_id = item.get("item_basic", {}).get("image", "")
+                if img_id:
+                    img_url = f"https://cf.shopee.tw/file/{img_id}"
+                    if img_url not in results:
+                        results.append(img_url)
+            if len(results) >= count:
+                break
+    except Exception as e:
+        print(f"  [Shopee] 商品圖獲取失敗: {e}")
+    if results:
+        print(f"  [Shopee] 取得 {len(results)} 張商品圖 URL")
+    return results
+
+
+def inject_images(content: str, keyword: str, article_idx: int,
+                  product_imgs: list = None) -> str:
+    """在每隔一個 H2 標題後插入圖片（優先用蝦皮商品圖），讓文章更有視覺感"""
     count = [0]
     pet_label = "貓咪" if "貓" in keyword else "狗狗" if "狗" in keyword else "寵物"
+    fallback_img = IMAGE_POOL[(article_idx * 3 + 4) % len(IMAGE_POOL)]
 
     def after_h2(match):
         n = count[0]
         count[0] += 1
         if n % 2 != 0:          # 每隔一個才插圖
             return match.group(0)
-        img = IMAGE_POOL[(article_idx * 3 + n // 2 + 4) % len(IMAGE_POOL)]
+        # 優先用蝦皮商品圖，沒有則 fallback Unsplash
+        if product_imgs:
+            img = product_imgs[(n // 2) % len(product_imgs)]
+        else:
+            img = IMAGE_POOL[(article_idx * 3 + n // 2 + 4) % len(IMAGE_POOL)]
         return (
             match.group(0) +
             f'\n<figure class="article-figure">'
-            f'<img src="{img}" alt="{keyword}推薦" loading="lazy">'
+            f'<img src="{img}" alt="{keyword}商品圖" loading="lazy" '
+            f'onerror="this.onerror=null;this.src=\'{fallback_img}\'">'
             f'<figcaption>{pet_label}好物推薦 — {keyword}精選</figcaption>'
             f'</figure>\n'
         )
@@ -351,14 +396,17 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     filename = f"{kw_slug}-{uid}.html"
     date_str = datetime.now().strftime("%Y-%m-%d")
 
-    image_url = pick_image(title)  # 依標題 hash 選圖，每篇不同
+    # 從蝦皮抓商品圖 URL（優先用真實商品圖片，更有說服力）
+    product_imgs = _fetch_shopee_img(keyword, title[:30], count=4)
+    image_url = product_imgs[0] if product_imgs else pick_image(title)
+
     read_time = calc_read_time(content)
     article_idx = int(hashlib.md5(title.encode()).hexdigest(), 16) % 997
 
-    # 注入穿插圖片
-    content = inject_images(content, keyword, article_idx)
+    # 注入穿插圖片（優先用蝦皮商品圖）
+    content = inject_images(content, keyword, article_idx, product_imgs=product_imgs)
 
-    # 生成社群圖文卡片
+    # 生成社群圖文卡片（背景用商品圖）
     date_str_nodash = datetime.now().strftime("%Y%m%d")
     social_card_filename = f"{date_str_nodash}_{article_idx % 100:02d}.jpg"
     social_card_path = SOCIAL_DIR / social_card_filename
