@@ -143,7 +143,11 @@ def _fetch_shopee_img(keyword: str, name: str = "", count: int = 4) -> list:
                         break
                     img_path = d.get("Image", "")
                     if img_path:
-                        results.append("https://d.rimg.com.tw" + img_path)
+                        if img_path.startswith("http"):
+                            img_url = img_path
+                        else:
+                            img_url = "https://d.rimg.com.tw" + img_path
+                        results.append(img_url)
             except Exception:
                 continue
             if len(results) >= count:
