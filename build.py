@@ -111,27 +111,46 @@ def _find_cjk_font() -> str:
     return ""
 
 
-def _fetch_shopee_img(keyword: str, name: str = "", count: int = 4) -> list:
+PRODUCT_IMG_DIR = BASE_DIR / "posts" / "images"
+
+def _fetch_and_save_product_imgs(keyword: str, name: str = "", count: int = 4) -> list:
     """
-    從電商搜尋商品圖片 URL（最多 count 個）
-    優先：露天拍賣 Ruten（本機 + GitHub Actions 皆可）
-    備用：蝦皮（僅 GitHub Actions datacenter IP 可用）
+    從露天拍賣搜尋商品圖、下載後存到 posts/images/、
+    返回 GitHub Pages 完整 URL 列表（永久自架，不依賴外部 CDN）
+    備用：蝦皮（GitHub Actions datacenter IP 可用）
     """
-    results = []
+    PRODUCT_IMG_DIR.mkdir(parents=True, exist_ok=True)
+    saved = []
     try:
         import requests as _req
         from urllib.parse import quote as _q
         h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
+        BLOG_IMG_BASE = "https://a12012300-ux.github.io/posts/images"
+
+        def _try_save(img_url: str) -> str | None:
+            """下載圖片、過濾佔位圖（< 20KB）、存檔、回傳本地 URL"""
+            try:
+                ir = _req.get(img_url, headers=h, timeout=10)
+                if ir.status_code != 200 or len(ir.content) < 20_000:
+                    return None
+                # 用 URL hash 當檔名，避免重複下載
+                fname = hashlib.md5(img_url.encode()).hexdigest()[:12] + ".jpg"
+                fpath = PRODUCT_IMG_DIR / fname
+                if not fpath.exists():
+                    fpath.write_bytes(ir.content)
+                return f"{BLOG_IMG_BASE}/{fname}"
+            except Exception:
+                return None
 
         # ── 1. 露天拍賣 Ruten ─────────────────────────────────
         for q in ([name[:30]] if name else []) + [keyword]:
             try:
-                search_url = (
+                rows = _req.get(
                     "https://rtapi.ruten.com.tw/api/search/v3/index.php/core/prod"
-                    "?q=" + _q(q) + "&type=direct&start=1&limit=16&sort=rnk/dc"
-                )
-                rows = _req.get(search_url, headers=h, timeout=10).json().get("Rows", [])
-                ids  = ",".join(p["Id"] for p in rows[:16] if "Id" in p)
+                    "?q=" + _q(q) + "&type=direct&start=1&limit=16&sort=rnk/dc",
+                    headers=h, timeout=10
+                ).json().get("Rows", [])
+                ids = ",".join(p["Id"] for p in rows[:16] if "Id" in p)
                 if not ids:
                     continue
                 details = _req.get(
@@ -139,56 +158,57 @@ def _fetch_shopee_img(keyword: str, name: str = "", count: int = 4) -> list:
                     headers=h, timeout=10
                 ).json()
                 for d in details:
-                    if len(results) >= count:
+                    if len(saved) >= count:
                         break
                     img_path = d.get("Image", "")
                     if not img_path:
                         continue
-                    img_url = img_path if img_path.startswith("http") \
-                              else "https://d.rimg.com.tw" + img_path
-                    # 下載檢查：過濾佔位圖（< 20KB 通常是 logo 或無圖）
-                    try:
-                        ir = _req.get(img_url, headers=h, timeout=8)
-                        if ir.status_code == 200 and len(ir.content) >= 20_000:
-                            results.append(img_url)
-                    except Exception:
-                        continue
+                    src = img_path if img_path.startswith("http") \
+                          else "https://d.rimg.com.tw" + img_path
+                    local_url = _try_save(src)
+                    if local_url:
+                        saved.append(local_url)
             except Exception:
                 continue
-            if len(results) >= count:
+            if len(saved) >= count:
                 break
 
         # ── 2. 蝦皮 fallback（GitHub Actions datacenter IP）──
-        if len(results) < count:
+        if len(saved) < count:
             sh = {**h, "referer": "https://shopee.tw/"}
             for q in ([name[:30]] if name else []) + [keyword]:
                 try:
-                    api_url = (
+                    resp = _req.get(
                         "https://shopee.tw/api/v4/search/search_items"
                         "?by=relevancy&keyword=" + _q(q) + "&limit=10&newest=0"
-                        "&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2"
+                        "&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2",
+                        headers=sh, timeout=12
                     )
-                    resp = _req.get(api_url, headers=sh, timeout=12)
                     if resp.status_code != 200:
                         continue
                     for item in resp.json().get("items", [])[:10]:
-                        if len(results) >= count:
+                        if len(saved) >= count:
                             break
                         img_id = item.get("item_basic", {}).get("image", "")
                         if img_id:
-                            img_url = "https://cf.shopee.tw/file/" + img_id
-                            if img_url not in results:
-                                results.append(img_url)
+                            local_url = _try_save("https://cf.shopee.tw/file/" + img_id)
+                            if local_url and local_url not in saved:
+                                saved.append(local_url)
                 except Exception:
                     continue
-                if len(results) >= count:
+                if len(saved) >= count:
                     break
 
     except Exception as e:
         print(f"  [ProductImg] {e}")
-    if results:
-        print(f"  [ProductImg] 取得 {len(results)} 張商品圖 URL")
-    return results
+    if saved:
+        print(f"  [ProductImg] 下載並儲存 {len(saved)} 張商品圖")
+    return saved
+
+
+# 向後相容別名
+def _fetch_shopee_img(keyword: str, name: str = "", count: int = 4) -> list:
+    return _fetch_and_save_product_imgs(keyword, name, count)
 
 
 def inject_images(content: str, keyword: str, article_idx: int,
