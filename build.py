@@ -112,40 +112,73 @@ def _find_cjk_font() -> str:
 
 
 def _fetch_shopee_img(keyword: str, name: str = "", count: int = 4) -> list:
-    """從蝦皮搜尋商品，返回 CDN 圖片 URL 列表（最多 count 個）"""
+    """
+    從電商搜尋商品圖片 URL（最多 count 個）
+    優先：露天拍賣 Ruten（本機 + GitHub Actions 皆可）
+    備用：蝦皮（僅 GitHub Actions datacenter IP 可用）
+    """
     results = []
     try:
         import requests as _req
         from urllib.parse import quote as _q
-        h = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120",
-            "referer": "https://shopee.tw/",
-        }
+        h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
+
+        # ── 1. 露天拍賣 Ruten ─────────────────────────────────
         for q in ([name[:30]] if name else []) + [keyword]:
-            api_url = (
-                f"https://shopee.tw/api/v4/search/search_items"
-                f"?by=relevancy&keyword={_q(q)}&limit=10&newest=0"
-                f"&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2"
-            )
             try:
-                resp  = _req.get(api_url, headers=h, timeout=12)
-                items = resp.json().get("items", [])
+                search_url = (
+                    "https://rtapi.ruten.com.tw/api/search/v3/index.php/core/prod"
+                    "?q=" + _q(q) + "&type=direct&start=1&limit=8&sort=rnk/dc"
+                )
+                rows = _req.get(search_url, headers=h, timeout=10).json().get("Rows", [])
+                ids  = ",".join(p["Id"] for p in rows[:8] if "Id" in p)
+                if not ids:
+                    continue
+                details = _req.get(
+                    "https://rtapi.ruten.com.tw/api/prod/v2/index.php/prod?id=" + ids,
+                    headers=h, timeout=10
+                ).json()
+                for d in details:
+                    if len(results) >= count:
+                        break
+                    img_path = d.get("Image", "")
+                    if img_path:
+                        results.append("https://d.rimg.com.tw" + img_path)
             except Exception:
                 continue
-            for item in items[:10]:
-                if len(results) >= count:
-                    break
-                img_id = item.get("item_basic", {}).get("image", "")
-                if img_id:
-                    img_url = f"https://cf.shopee.tw/file/{img_id}"
-                    if img_url not in results:
-                        results.append(img_url)
             if len(results) >= count:
                 break
+
+        # ── 2. 蝦皮 fallback（GitHub Actions datacenter IP）──
+        if len(results) < count:
+            sh = {**h, "referer": "https://shopee.tw/"}
+            for q in ([name[:30]] if name else []) + [keyword]:
+                try:
+                    api_url = (
+                        "https://shopee.tw/api/v4/search/search_items"
+                        "?by=relevancy&keyword=" + _q(q) + "&limit=10&newest=0"
+                        "&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2"
+                    )
+                    resp = _req.get(api_url, headers=sh, timeout=12)
+                    if resp.status_code != 200:
+                        continue
+                    for item in resp.json().get("items", [])[:10]:
+                        if len(results) >= count:
+                            break
+                        img_id = item.get("item_basic", {}).get("image", "")
+                        if img_id:
+                            img_url = "https://cf.shopee.tw/file/" + img_id
+                            if img_url not in results:
+                                results.append(img_url)
+                except Exception:
+                    continue
+                if len(results) >= count:
+                    break
+
     except Exception as e:
-        print(f"  [Shopee] 商品圖獲取失敗: {e}")
+        print(f"  [ProductImg] {e}")
     if results:
-        print(f"  [Shopee] 取得 {len(results)} 張商品圖 URL")
+        print(f"  [ProductImg] 取得 {len(results)} 張商品圖 URL")
     return results
 
 
@@ -209,36 +242,95 @@ def build_product_overview(title: str, image_url: str, price: str, rating: str,
 
 def generate_social_card(title: str, keyword: str, price: str, rating: str,
                           bg_url: str, font_path: str, out_path: Path) -> bool:
-    """生成 1080×1080 IG 社群圖文卡片"""
+    """
+    生成 1080×1080 IG 社群圖文卡片（現代分割版）
+    上半：清晰商品圖（無模糊）
+    下半：白底卡片 — 品牌標 / 標題 / 星星 / 價格 Badge / CTA
+    """
     try:
         import requests as _req, io as _io
         from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
         SW, SH = 1080, 1080
 
-        # 背景
+        # ── 色盤 ──────────────────────────────────────────────
+        C_BRAND    = (30,  90,  60)   # 深綠  品牌條
+        C_ACCENT   = (255, 90,  50)   # 橙紅  價格 badge
+        C_GOLD     = (255, 185,  0)   # 金黃  星星
+        C_DARK     = (28,  28,  28)   # 近黑  標題文字
+        C_GRAY     = (110, 110, 110)  # 灰    副標
+        C_WHITE    = (255, 255, 255)
+        C_BG       = (250, 248, 244)  # 米白  卡片背景
+        C_DIVIDER  = (220, 215, 208)  # 分隔線
+        C_FOOTER   = (18,  66,  45)   # 深綠  頁尾
+
+        # ── 區域分割 ─────────────────────────────────────────
+        BRAND_H   = 80    # 頂部品牌條高度
+        IMG_TOP   = BRAND_H
+        IMG_BOT   = 510   # 商品圖底部（430px 高）
+        CARD_TOP  = IMG_BOT
+        FOOTER_H  = 72
+        FOOTER_Y  = SH - FOOTER_H
+
+        # ── 字型 ─────────────────────────────────────────────
+        def _font(size):
+            try:
+                return ImageFont.truetype(font_path, size) if font_path else ImageFont.load_default()
+            except:
+                return ImageFont.load_default()
+        fBrand = _font(36)
+        fTitle = _font(62)
+        fMed   = _font(46)
+        fSmall = _font(32)
+        fTiny  = _font(27)
+
+        # ── 畫布 ─────────────────────────────────────────────
+        canvas = Image.new("RGB", (SW, SH), C_BG)
+        draw   = ImageDraw.Draw(canvas)
+
+        # ── 1. 商品圖（上半，清晰不模糊）────────────────────
+        img_h = IMG_BOT - IMG_TOP
         try:
-            r = _req.get(bg_url, timeout=12, headers={"User-Agent": "Mozilla/5.0"})
-            bg = Image.open(_io.BytesIO(r.content)).convert("RGB").resize((SW, SH), Image.LANCZOS)
-            bg = bg.filter(ImageFilter.GaussianBlur(radius=14))
-            bg = Image.blend(bg, Image.new("RGB", (SW, SH), (0, 0, 0)), 0.65)
+            resp     = _req.get(bg_url, timeout=12, headers={"User-Agent": "Mozilla/5.0"})
+            prod_img = Image.open(_io.BytesIO(resp.content)).convert("RGB")
+            # Center-crop 填滿區域
+            pw, ph = prod_img.size
+            scale  = max(SW / pw, img_h / ph)
+            nw, nh = int(pw * scale), int(ph * scale)
+            prod_img = prod_img.resize((nw, nh), Image.LANCZOS)
+            lx = (nw - SW) // 2
+            ty = (nh - img_h) // 2
+            prod_img = prod_img.crop((lx, ty, lx + SW, ty + img_h))
+            canvas.paste(prod_img, (0, IMG_TOP))
         except:
-            bg = Image.new("RGB", (SW, SH), (15, 10, 35))
+            # 漸層色塊備用
+            for y in range(IMG_TOP, IMG_BOT):
+                t   = (y - IMG_TOP) / img_h
+                col = (int(220 - 40*t), int(220 - 60*t), int(200 - 60*t))
+                draw.line([(0, y), (SW, y)], fill=col)
 
-        draw = ImageDraw.Draw(bg)
+        # 商品圖底部漸層遮罩（讓卡片過渡自然）
+        for i in range(60):
+            alpha = int(255 * (i / 60) ** 2)
+            draw.line([(0, IMG_BOT - 60 + i), (SW, IMG_BOT - 60 + i)],
+                      fill=(*C_BG, alpha))
+
+        # ── 2. 品牌頂條 ──────────────────────────────────────
+        draw.rectangle([0, 0, SW, BRAND_H], fill=C_BRAND)
+        brand_txt = "Purrfectly cute   |   毛孩研究室"
         try:
-            fBig   = ImageFont.truetype(font_path, 72) if font_path else ImageFont.load_default()
-            fMed   = ImageFont.truetype(font_path, 50) if font_path else ImageFont.load_default()
-            fSmall = ImageFont.truetype(font_path, 34) if font_path else ImageFont.load_default()
+            bw = draw.textlength(brand_txt, font=fBrand)
         except:
-            fBig = fMed = fSmall = ImageFont.load_default()
+            bw = len(brand_txt) * 18
+        draw.text(((SW - bw) // 2, (BRAND_H - 36) // 2), brand_txt,
+                  fill=C_WHITE, font=fBrand)
 
-        # 頂部品牌綠色條
-        draw.rectangle([0, 0, SW, 90], fill=(45, 106, 79))
-        draw.text((SW // 2, 45), "Purrfectly cute  |  寵物好物評測",
-                  fill=(255, 255, 255), font=fSmall, anchor="mm")
+        # ── 3. 白底卡片區（圓角上緣效果）────────────────────
+        R = 44
+        draw.rectangle([0, CARD_TOP + R, SW, FOOTER_Y], fill=C_BG)
+        draw.rectangle([0, CARD_TOP, SW, CARD_TOP + R], fill=C_BG)
 
-        # 標題（自動換行）
+        # ── 輔助：自動換行 ────────────────────────────────────
         def wrap_text(txt, fnt, max_w):
             lines, cur = [], ""
             for ch in txt:
@@ -246,71 +338,88 @@ def generate_social_card(title: str, keyword: str, price: str, rating: str,
                 try:
                     tw = draw.textlength(test, font=fnt)
                 except:
-                    tw = len(test) * 38
+                    tw = len(test) * 32
                 if tw > max_w:
-                    lines.append(cur)
-                    cur = ch
+                    lines.append(cur); cur = ch
                 else:
                     cur = test
             if cur:
                 lines.append(cur)
             return lines
 
-        title_lines = wrap_text(title[:36], fBig, SW - 80)
-        y = 140
-        for line in title_lines[:3]:
+        # ── 4. 標題 ───────────────────────────────────────────
+        y = CARD_TOP + 42
+        title_lines = wrap_text(title[:38], fTitle, SW - 80)
+        for line in title_lines[:2]:
             try:
-                tw = draw.textlength(line, font=fBig)
+                tw = draw.textlength(line, font=fTitle)
             except:
-                tw = len(line) * 38
-            x = (SW - tw) // 2
-            draw.text((x + 3, y + 3), line, fill=(0, 0, 0), font=fBig)
-            draw.text((x, y), line, fill=(255, 215, 0), font=fBig)
+                tw = len(line) * 32
+            draw.text(((SW - tw) // 2, y), line, fill=C_DARK, font=fTitle)
+            y += 75
+
+        # ── 5. 分隔線 ─────────────────────────────────────────
+        y += 10
+        draw.line([(80, y), (SW - 80, y)], fill=C_DIVIDER, width=2)
+        y += 22
+
+        # ── 6. 星星評分 ───────────────────────────────────────
+        try:
+            rv = float(rating)
+        except:
+            rv = 4.8
+        stars_str = "★" * int(rv) + "☆" * (5 - int(rv))
+        score_str = f"  {rating} / 5  買家評分"
+        try:
+            sw1 = draw.textlength(stars_str, font=fMed)
+            sw2 = draw.textlength(score_str, font=fSmall)
+        except:
+            sw1 = len(stars_str) * 26; sw2 = len(score_str) * 18
+        sx = (SW - sw1 - sw2) // 2
+        draw.text((sx, y), stars_str, fill=C_GOLD, font=fMed)
+        draw.text((sx + sw1, y + 8), score_str, fill=C_GRAY, font=fSmall)
+        y += 68
+
+        # ── 7. 價格 Badge ─────────────────────────────────────
+        if price:
+            p_txt = f"NT$ {price}"
+            try:
+                pw2 = int(draw.textlength(p_txt, font=fMed))
+            except:
+                pw2 = len(p_txt) * 26
+            pad   = 44
+            bw    = pw2 + pad * 2
+            bx    = (SW - bw) // 2
+            # 圓角矩形
+            try:
+                draw.rounded_rectangle([bx, y, bx + bw, y + 68], radius=34, fill=C_ACCENT)
+            except AttributeError:
+                draw.rectangle([bx, y, bx + bw, y + 68], fill=C_ACCENT)
+            draw.text(((SW - pw2) // 2, y + 10), p_txt, fill=C_WHITE, font=fMed)
             y += 88
 
-        # 評分
+        # ── 8. CTA 標語 ───────────────────────────────────────
+        cta = "老實說！值不值得買？點連結看評測"
         try:
-            r_val = float(rating)
-            stars = "★" * int(r_val) + "☆" * (5 - int(r_val))
+            cw = draw.textlength(cta, font=fTiny)
         except:
-            stars = "★★★★☆"; r_val = 4.5
-        rating_str = f"{stars}  {rating} / 5"
+            cw = len(cta) * 15
+        draw.text(((SW - cw) // 2, y + 6), cta, fill=C_GRAY, font=fTiny)
+
+        # ── 9. 頁尾深綠條 ─────────────────────────────────────
+        draw.rectangle([0, FOOTER_Y, SW, SH], fill=C_FOOTER)
+        footer = "完整評測  >>  a12012300-ux.github.io"
         try:
-            tw = draw.textlength(rating_str, font=fMed)
+            fw = draw.textlength(footer, font=fSmall)
         except:
-            tw = len(rating_str) * 26
-        draw.text(((SW - tw) // 2, y + 20), rating_str, fill=(255, 215, 0), font=fMed)
-        y += 90
-
-        # 價格徽章
-        if price:
-            price_txt = f"NT$ {price}"
-            pw = 260
-            draw.rectangle([(SW - pw) // 2, y, (SW + pw) // 2, y + 68], fill=(238, 77, 45), width=0)
-            try:
-                tw = draw.textlength(price_txt, font=fMed)
-            except:
-                tw = len(price_txt) * 26
-            draw.text(((SW - tw) // 2, y + 10), price_txt, fill=(255, 255, 255), font=fMed)
-            y += 90
-
-        # "值不值得買？" 提問
-        question = "值不值得買？老實說！"
-        try:
-            tw = draw.textlength(question, font=fMed)
-        except:
-            tw = len(question) * 26
-        draw.text(((SW - tw) // 2, y + 10), question, fill=(255, 255, 255), font=fMed)
-
-        # 底部網址條
-        draw.rectangle([0, SH - 72, SW, SH], fill=(27, 67, 50))
-        draw.text((SW // 2, SH - 36),
-                  "完整評測 >> a12012300-ux.github.io",
-                  fill=(178, 223, 199), font=fSmall, anchor="mm")
+            fw = len(footer) * 16
+        draw.text(((SW - fw) // 2, FOOTER_Y + (FOOTER_H - 32) // 2),
+                  footer, fill=(178, 223, 199), font=fSmall)
 
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        bg.save(str(out_path), "JPEG", quality=93)
+        canvas.save(str(out_path), "JPEG", quality=93)
         return True
+
     except Exception as e:
         print(f"  [SocialCard] 生成失敗: {e}")
         return False
@@ -684,6 +793,17 @@ def rebuild_all_posts():
             if not art_m:
                 continue
             raw_content = art_m.group(1).strip()
+
+            # 清除舊的穿插圖片（讓 build_article_page 重新抓蝦皮商品圖插入）
+            raw_content = re.sub(
+                r'\n?<figure class="article-figure">.*?</figure>\n?',
+                '', raw_content, flags=re.DOTALL
+            )
+            # 清除舊的產品資訊卡（會重新生成）
+            raw_content = re.sub(
+                r'<div class="product-overview">.*?</div>\s*</div>\s*</div>',
+                '', raw_content, flags=re.DOTALL
+            )
 
             # 建假 summary（讓 build_article_page 可以正確查 affiliates）
             summary = {"keyword": keyword, "price": price, "rating": rating,
