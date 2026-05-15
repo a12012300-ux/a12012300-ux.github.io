@@ -560,6 +560,11 @@ def run_build():
 
     print(f"\n  新增 {new_count} 篇，累積 {len(all_meta)} 篇文章")
     print(f"  首頁已更新：{BASE_DIR / 'index.html'}")
+
+    # 重建舊文章（套用最新模板樣式）
+    print("\n  [Rebuild] 套用新模板到所有舊文章...")
+    rebuild_all_posts()
+
     return all_meta
 
 
@@ -578,5 +583,104 @@ def build_sitemap(articles_meta: list):
     print(f"  Sitemap 已更新：{len(articles_meta)} 個 URL")
 
 
+def rebuild_all_posts():
+    """
+    重建所有已部署的舊文章，套用最新模板樣式。
+    直接讀取 posts/*.html，提取文章內容後重新套用新模板。
+    """
+    ARTICLES_DST.mkdir(exist_ok=True)
+    with open(BASE_DIR / "article-template.html", encoding='utf-8') as f:
+        template = f.read()
+
+    meta_cache_path = BASE_DIR / "articles_meta.json"
+    all_meta = []
+    if meta_cache_path.exists():
+        with open(meta_cache_path, encoding='utf-8') as f:
+            all_meta = json.load(f)
+
+    # 建立 filename → meta 對照表
+    meta_by_file = {a['filename']: a for a in all_meta}
+
+    # Slug → keyword 反查表
+    SLUG_KEYWORD = {v: k for k, v in KEYWORD_SLUG.items()}
+
+    existing_posts = sorted(glob.glob(str(ARTICLES_DST / "*.html")))
+    rebuilt = 0
+
+    for post_path in existing_posts:
+        fname = Path(post_path).name
+        if fname == "index.html":
+            continue
+
+        # 從 meta 或從 filename slug 取得 keyword
+        m = meta_by_file.get(fname, {})
+        kw_slug = fname.split("-")[0] + "-" + fname.split("-")[1] if "-" in fname else "pet-product"
+        kw_slug = "-".join(fname.split("-")[:-1])  # drop uid suffix
+        keyword = m.get("keyword") or SLUG_KEYWORD.get(kw_slug, "寵物用品")
+
+        try:
+            with open(post_path, encoding='utf-8') as f:
+                old_html = f.read()
+
+            # 從舊文章提取核心資料
+            title   = m.get("title") or extract_title(old_html)
+            price   = str(m.get("price", ""))
+            rating  = str(m.get("rating", "4.8"))
+            aff_url = m.get("affiliate_url", "")
+
+            # 提取文章正文（去掉舊模板的 header/nav/footer，只留 <article> 內容）
+            art_m = re.search(r'<article[^>]*>(.*?)</article>', old_html, re.DOTALL | re.IGNORECASE)
+            if not art_m:
+                # 嘗試提取 body 內容
+                art_m = re.search(r'<body[^>]*>(.*?)</body>', old_html, re.DOTALL | re.IGNORECASE)
+            if not art_m:
+                continue
+            raw_content = art_m.group(1).strip()
+
+            # 建假 summary（讓 build_article_page 可以正確查 affiliates）
+            summary = {"keyword": keyword, "price": price, "rating": rating,
+                       "affiliate_url": aff_url, "title": title}
+
+            # 寫臨時 source HTML 供 build_article_page 解析
+            import tempfile as _tf
+            with _tf.NamedTemporaryFile(mode='w', suffix='.html', encoding='utf-8',
+                                        delete=False) as tmp:
+                tmp.write(f"<html><head><title>{title}</title>"
+                          f'<meta name="description" content="{title} 評測">'
+                          f"</head><body>{raw_content}</body></html>")
+                tmp_path = tmp.name
+
+            page_html, new_meta = build_article_page(Path(tmp_path), template, summary)
+            Path(tmp_path).unlink(missing_ok=True)
+
+            # 強制使用原始 filename（不要重新計算）
+            page_html = page_html.replace(new_meta["filename"], fname)
+            new_meta["filename"] = fname
+
+            with open(post_path, 'w', encoding='utf-8') as f:
+                f.write(page_html)
+
+            # 更新 meta cache
+            meta_by_file[fname] = new_meta
+            rebuilt += 1
+
+        except Exception as e:
+            print(f"  [Rebuild] 跳過 {fname}: {e}")
+
+    # 更新 all_meta
+    all_meta = list(meta_by_file.values())
+    with open(meta_cache_path, 'w', encoding='utf-8') as f:
+        json.dump(all_meta, f, ensure_ascii=False, indent=2)
+
+    update_index(all_meta)
+    build_sitemap(all_meta)
+    print(f"\n  [Rebuild] 重建 {rebuilt} 篇舊文章，已套用最新模板")
+    return rebuilt
+
+
 if __name__ == "__main__":
-    run_build()
+    import sys
+    if "--rebuild-all" in sys.argv:
+        rebuild_all_posts()
+    else:
+        run_build()

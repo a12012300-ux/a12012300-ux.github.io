@@ -228,8 +228,8 @@ def shopee_imgs(keyword: str, name: str = "", count: int = 4) -> list:
     return results
 
 
-def get_fallback_imgs(keyword: str, count: int = 4) -> list:
-    """Unsplash 備用圖片（靜態圖）"""
+def get_fallback_imgs(keyword: str, count: int = 8) -> list:
+    """Unsplash 備用圖片（多張，供快速剪輯蒙太奇用）"""
     pt   = pet_type(keyword)
     pool = CAT_PHOTOS if pt == "cat" else DOG_PHOTOS if pt == "dog" else PET_PHOTOS
     out  = []
@@ -315,57 +315,174 @@ def _overlay_rgba_on_frame(frame, ov_arr):
 
 
 # ════════════════════════════════════════════════════════════
-#  B-roll 場景：真實影片 + 文字疊加
+#  快速剪輯蒙太奇（無需任何 API — 多圖快切，媲美真實 B-roll）
 # ════════════════════════════════════════════════════════════
-def make_broll_scene(video_path, fallback_img, duration,
-                     text_main, text_sub, font_path):
+def make_rapid_montage(images: list, duration: float,
+                       text_main: str, text_sub: str,
+                       font_path: str) -> "VideoClip":
     """
-    使用真實 .mp4 影片作為 B-roll（優先），失敗則用靜態圖 Ken Burns。
+    多圖快剪蒙太奇：每張圖顯示 0.8-1.4s，不同 Ken Burns 效果輪流。
+    效果遠優於一張圖慢慢放大（幻燈片感）：
+      - 多鏡頭切換 → 有剪輯節奏感
+      - 每鏡用不同效果（推近/拉遠/左搖/右搖/斜移）
+      - 鏡頭間 0.15s 交叉淡變
     """
     import numpy as np
+    from moviepy.editor import VideoClip
 
+    imgs = [img for img in images if img is not None]
+    if not imgs:
+        # 純漸層備用
+        imgs = [None]
+
+    per_img = max(0.7, min(1.5, duration / max(1, len(imgs))))
+    n_shots = max(1, int(duration / per_img))
+    fade    = 0.12   # 鏡頭間交叉淡變時長
+
+    # ── 預先建立每個鏡頭的 make_frame 閉包 ──────────────
+    import io as _io
+    from PIL import Image as _PILImg
+
+    shot_frames = []   # list of (arr, make_frame_fn, eff)
+    for i in range(n_shots):
+        img_bytes = imgs[i % len(imgs)]
+        eff = MOTION_EFFECTS[i % len(MOTION_EFFECTS)]
+
+        SCALE = 1.30
+        if img_bytes:
+            try:
+                img = _PILImg.open(_io.BytesIO(img_bytes)).convert("RGB")
+            except Exception:
+                img_bytes = None
+        if not img_bytes:
+            from PIL import ImageDraw as _ID
+            img = _PILImg.new("RGB", (WIDTH, HEIGHT))
+            d   = _ID.Draw(img)
+            for y in range(HEIGHT):
+                t_ = y / HEIGHT
+                d.line([(0,y),(WIDTH,y)], fill=(int(10+30*t_),int(8+20*t_),int(30+60*t_)))
+
+        iw, ih = img.size
+        if iw/ih > WIDTH/HEIGHT:
+            nh = int(HEIGHT*SCALE); nw = int(iw*nh/ih)
+        else:
+            nw = int(WIDTH*SCALE);  nh = int(ih*nw/iw)
+        if nw < WIDTH:  nw = int(WIDTH*SCALE);  nh = int(ih*nw/iw)
+        if nh < HEIGHT: nh = int(HEIGHT*SCALE); nw = int(iw*nh/ih)
+        img = img.resize((nw, nh), _PILImg.LANCZOS)
+        blk = _PILImg.new("RGB",(nw,nh),(0,0,0))
+        img = _PILImg.blend(img, blk, alpha=0.30)
+        arr = np.array(img)
+
+        # 為這個 shot 建立 make_frame（closure capture）
+        _eff, _arr, _nw, _nh = eff, arr, nw, nh
+
+        def _mf(t, d_=per_img, e_=_eff, a_=_arr, nw_=_nw, nh_=_nh):
+            p = max(0.0, min(1.0, t/d_))
+            p = p*p*(3-2*p)
+            if e_ == "zoom_in":
+                zm = 1.0+0.22*p
+                cw,ch = max(1,int(WIDTH/zm)),max(1,int(HEIGHT/zm))
+                x0,y0 = (nw_-cw)//2,(nh_-ch)//2
+                return np.array(_PILImg.fromarray(a_[y0:y0+ch,x0:x0+cw])
+                                .resize((WIDTH,HEIGHT),_PILImg.BILINEAR))
+            elif e_ == "zoom_out":
+                zm = 1.22-0.22*p
+                cw,ch = max(1,int(WIDTH/zm)),max(1,int(HEIGHT/zm))
+                x0,y0 = (nw_-cw)//2,(nh_-ch)//2
+                return np.array(_PILImg.fromarray(a_[y0:y0+ch,x0:x0+cw])
+                                .resize((WIDTH,HEIGHT),_PILImg.BILINEAR))
+            elif e_ == "pan_left":
+                mp = nw_-WIDTH
+                x0,y0 = int(mp*p),(nh_-HEIGHT)//2
+                return a_[y0:y0+HEIGHT, x0:x0+WIDTH]
+            elif e_ == "pan_right":
+                mp = nw_-WIDTH
+                x0,y0 = mp-int(mp*p),(nh_-HEIGHT)//2
+                return a_[y0:y0+HEIGHT, x0:x0+WIDTH]
+            else:  # zoom_pan
+                mp = (nw_-WIDTH)//2
+                zm = 1.0+0.15*p
+                cw,ch = max(1,int(WIDTH/zm)),max(1,int(HEIGHT/zm))
+                x0 = max(0,min(nw_-cw,(nw_-cw)//2+int(mp*p)))
+                y0 = (nh_-ch)//2
+                return np.array(_PILImg.fromarray(a_[y0:y0+ch,x0:x0+cw])
+                                .resize((WIDTH,HEIGHT),_PILImg.BILINEAR))
+
+        shot_frames.append(_mf)
+
+    # ── 整合所有 shot 為一個 make_frame ─────────────────
+    def composite_frame(t):
+        idx = min(int(t / per_img), n_shots - 1)
+        t_loc = t - idx * per_img
+
+        frame = shot_frames[idx](t_loc).astype(np.float32)
+
+        # 從前一個 shot 淡入
+        if t_loc < fade and idx > 0:
+            alpha = t_loc / fade
+            prev  = shot_frames[idx-1](per_img - 0.01).astype(np.float32)
+            frame = (prev*(1-alpha) + frame*alpha)
+
+        # 淡出到下一個 shot
+        elif t_loc > per_img - fade and idx < n_shots - 1:
+            alpha = (t_loc - (per_img - fade)) / fade
+            nxt   = shot_frames[idx+1](0).astype(np.float32)
+            frame = (frame*(1-alpha) + nxt*alpha)
+
+        return frame.clip(0, 255).astype(np.uint8)
+
+    base = VideoClip(composite_frame, duration=duration).set_fps(FPS)
+
+    if text_main:
+        ov_arr = _make_text_overlay(text_main, text_sub, font_path)
+        return base.fl_image(lambda f: _overlay_rgba_on_frame(f, ov_arr)).set_fps(FPS)
+
+    return base
+
+
+# ════════════════════════════════════════════════════════════
+#  B-roll 場景（Pexels 真實影片 or 快速蒙太奇備用）
+# ════════════════════════════════════════════════════════════
+def make_broll_scene(video_path, fallback_imgs, duration,
+                     text_main, text_sub, font_path):
+    """
+    B-roll 場景：
+      1. 若有 Pexels 真實影片 → VideoFileClip
+      2. 否則 → 快速剪輯蒙太奇（多圖快切，遠優於單圖幻燈片）
+    """
     # ── 嘗試使用真實影片 ────────────────────────────────────
     if video_path and Path(video_path).exists():
         try:
-            from moviepy.editor import VideoFileClip, concatenate_videoclips, VideoClip
+            from moviepy.editor import VideoFileClip, concatenate_videoclips
 
             raw = VideoFileClip(video_path, audio=False)
-            # 若影片比需要的短，就循環
             if raw.duration < duration + 0.5:
                 repeats = int((duration + 1) / raw.duration) + 1
                 raw = concatenate_videoclips([raw] * repeats)
             raw = raw.subclip(0, duration)
-
-            # 縮放到目標尺寸
             rw, rh = raw.size
             scale = max(WIDTH / rw, HEIGHT / rh)
             nw = int(rw * scale); nh = int(rh * scale)
             raw = raw.resize((nw, nh))
-            # 置中裁切
             x0 = (nw - WIDTH)  // 2
             y0 = (nh - HEIGHT) // 2
             raw = raw.crop(x1=x0, y1=y0, x2=x0+WIDTH, y2=y0+HEIGHT)
-
-            # 稍微調暗（文字可讀）
             raw = raw.fl_image(lambda f: (f * 0.72).clip(0, 255).astype("uint8"))
-
-            # 文字疊加（預計算 overlay array）
             if text_main:
                 ov_arr = _make_text_overlay(text_main, text_sub, font_path)
                 final  = raw.fl_image(lambda f: _overlay_rgba_on_frame(f, ov_arr))
             else:
                 final = raw
-
-            final = final.set_fps(FPS)
-            print(f"     [BRoll] 真實影片 OK ({duration:.1f}s)")
-            return final
-
+            print(f"     [BRoll] Pexels 真實影片 OK ({duration:.1f}s)")
+            return final.set_fps(FPS)
         except Exception as e:
-            print(f"     [BRoll] VideoFileClip 失敗: {e}，改用靜態圖")
+            print(f"     [BRoll] VideoFileClip 失敗: {e}，改用快速蒙太奇")
 
-    # ── 降級：靜態圖 + Ken Burns ─────────────────────────────
-    return motion_clip(fallback_img, duration, "zoom_in",
-                       text_main, text_sub, font_path)
+    # ── 快速剪輯蒙太奇（無需外部 API）──────────────────────
+    imgs = fallback_imgs if isinstance(fallback_imgs, list) else [fallback_imgs]
+    print(f"     [BRoll] 快速蒙太奇 {len(imgs)} 張圖快切 ({duration:.1f}s)")
+    return make_rapid_montage(imgs, duration, text_main, text_sub, font_path)
 
 
 # ════════════════════════════════════════════════════════════
@@ -845,25 +962,18 @@ def create_video(product: dict, output_path: str) -> float:
         prod_images = get_fallback_imgs(keyword, count=4)
     prod_img = prod_images[0] if prod_images else None
 
-    # ── 2. 下載 Pexels 真實影片 B-roll ──────────────────────
-    broll_query = kw2en(keyword)
-    print(f"  [Pexels] 搜尋 B-roll 影片：「{broll_query}」...")
+    # ── 2. 預抓 B-roll 靜態圖（8 張，供快速蒙太奇用）────────
+    print(f"  [BRoll] 預抓 8 張 Unsplash 圖供快速蒙太奇...")
+    broll_static = get_fallback_imgs(keyword, count=8)
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        pexels_paths = get_pexels_videos(broll_query, tmpdir, count=4)
-
-        # 額外嘗試第二個查詢（若不夠）
-        if len(pexels_paths) < 2:
-            pt = pet_type(keyword)
-            q2 = "cute kitten indoor" if pt == "cat" else "puppy playing outdoor" if pt == "dog" else "cute pet home"
-            print(f"  [Pexels] 補充查詢：「{q2}」...")
-            pexels_paths += get_pexels_videos(q2, tmpdir, count=2)
-
-        # 靜態圖備用（當 Pexels 影片不夠時）
-        broll_static = get_fallback_imgs(keyword, count=4) if len(pexels_paths) < 4 else []
-
+        # ── 3. 嘗試 Pexels 影片（若有 API key）──────────────
+        pexels_paths = []
+        if PEXELS_API_KEY:
+            broll_query = kw2en(keyword)
+            print(f"  [Pexels] 搜尋：「{broll_query}」...")
+            pexels_paths = get_pexels_videos(broll_query, tmpdir, count=4)
         broll_vid_idx = 0
-        broll_img_idx = 0
         clips = []
 
         for i, scene in enumerate(scenes):
@@ -875,24 +985,19 @@ def create_video(product: dict, output_path: str) -> float:
             tts(scene["narration"], audio_path)
             aud_dur = AudioFileClip(audio_path).duration
 
-            # ── B-roll 場景（真實影片優先）───────────────────
+            # ── B-roll 場景 ───────────────────────────────────
             if tp == "broll":
                 total_dur = aud_dur + 0.5
-                effect    = scene.get("effect", MOTION_EFFECTS[i % len(MOTION_EFFECTS)])
 
-                # 取下一支 Pexels 影片
+                # 取 Pexels 影片（若有）
                 vid_path = None
                 if broll_vid_idx < len(pexels_paths):
                     vid_path = pexels_paths[broll_vid_idx]
                     broll_vid_idx += 1
 
-                # 靜態圖備用
-                fallback = (broll_static[broll_img_idx % len(broll_static)]
-                            if broll_static else None)
-                broll_img_idx += 1
-
+                # 傳入所有靜態圖供快速蒙太奇備用
                 vclip = make_broll_scene(
-                    vid_path, fallback, total_dur,
+                    vid_path, broll_static, total_dur,
                     scene.get("text_main",""),
                     scene.get("text_sub",""),
                     font_path,

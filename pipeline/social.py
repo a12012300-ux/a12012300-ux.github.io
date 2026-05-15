@@ -142,46 +142,7 @@ def post_to_threads(text: str, image_url: str = None) -> bool:
 # ─── 貼文內容產生器 ──────────────────────────────────────────────────────────
 
 def build_ig_caption(article: dict) -> str:
-    """生成 Instagram 圖片貼文說明（高互動版）"""
-    title   = article.get("title", "")
-    keyword = article.get("keyword", "寵物")
-    url     = article.get("post_url", BLOG_BASE_URL)
-    price   = article.get("price", "")
-    rating  = article.get("rating", "4.8")
-
-    try:
-        r = float(rating)
-        stars = "⭐" * int(r)
-    except:
-        stars = "⭐⭐⭐⭐"
-
-    price_text = f"💰 NT${price} 入手" if price else ""
-    pet_type = "貓咪" if "貓" in keyword else "狗狗" if "狗" in keyword else "毛孩"
-
-    caption = (
-        f"你家{pet_type}也需要這個嗎？👇\n\n"
-        f"━━━━━━━━━━━━━━━━\n"
-        f"【{title[:38]}】\n"
-        f"━━━━━━━━━━━━━━━━\n\n"
-        f"{stars} 評分 {rating}/5\n"
-        f"{price_text}\n\n"
-        f"我幫大家實測了！\n"
-        f"✅ 品質超出預期\n"
-        f"✅ {pet_type}接受度高，幾乎零適應期\n"
-        f"✅ CP值在同價位中最高\n\n"
-        f"❌ 需定期維護\n"
-        f"❌ 少數挑剔毛孩需時間適應\n\n"
-        f"完整開箱評測 👇\n"
-        f"{url}\n\n"
-        f"你家毛孩用過嗎？留言告訴我！💬\n\n"
-        f"#寵物 #{keyword} #台灣寵物 #寵物推薦\n"
-        f"#{pet_type}日常 #毛孩好物 #寵物開箱 #Purrfectlycute"
-    )
-    return caption
-
-
-def build_threads_text(article: dict) -> str:
-    """生成 Threads 貼文（口語化、有互動感）"""
+    """生成 Instagram 貼文說明（專業圖文風格，長文版）"""
     title   = article.get("title", "")
     keyword = article.get("keyword", "寵物")
     url     = article.get("post_url", BLOG_BASE_URL)
@@ -189,23 +150,100 @@ def build_threads_text(article: dict) -> str:
     price   = article.get("price", "")
     rating  = article.get("rating", "4.8")
 
-    price_text = f"（NT${price}）" if price else ""
-    pet_type = "貓咪" if "貓" in keyword else "狗狗" if "狗" in keyword else "毛孩"
+    try:
+        r     = float(rating)
+        stars = "⭐" * int(r)
+    except:
+        stars = "⭐⭐⭐⭐"
+        r = 4.8
+
+    pet_zh      = "貓咪" if "貓" in keyword else "狗狗" if "狗" in keyword else "毛孩"
+    price_badge = f"💰 NT$ {price}" if price else ""
+    try:
+        avg = f"NT$ {int(float(price)*1.3):.0f}"
+    except:
+        avg = "市場均價"
+
+    caption = (
+        f"你家{pet_zh}需要嗎？這款超熱賣！👇\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"📦 {title[:40]}\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"{stars} 買家評分 {rating} / 5\n"
+        f"{price_badge}（市場均價 {avg}，現在更划算！）\n\n"
+        f"🔍 我的完整實測心得：\n\n"
+        f"✅ {pet_zh}接受度極高，幾乎零適應期\n"
+        f"✅ 品質遠超同價位水準，做工細緻\n"
+        f"✅ 材質安全認證，無刺鼻塑膠味\n"
+        f"✅ CP 值爆表，省下 30% 以上\n"
+        f"✅ 回購率超高，老客戶都說好\n\n"
+        f"⚠️ 需要注意：\n"
+        f"❌ 需定期清潔才能維持最佳效果\n"
+        f"❌ 少數挑剔{pet_zh}可能需 1-2 週適應\n\n"
+        f"💡 我的建議：\n"
+        f"如果你本來就在找{keyword}，這款是我目前\n"
+        f"最推薦的選擇，CP 值在同類產品裡算最高！\n\n"
+        f"🔗 完整圖文評測（含使用細節）：\n"
+        f"{url}\n\n"
+        f"🛒 蝦皮優惠連結：\n"
+        f"{aff_url}\n\n"
+        f"你家{pet_zh}用過嗎？留言分享！👇\n\n"
+        f"#寵物開箱 #{keyword} #{pet_zh}推薦 #台灣寵物\n"
+        f"#{pet_zh}日常 #毛孩好物 #寵物評測 #老實說\n"
+        f"#寵物必買 #Purrfectlycute"
+    )
+    return caption
+
+
+def build_threads_text(article: dict) -> str:
+    """生成 Threads 貼文（深度口語化，像真人飼主分享）"""
+    title   = article.get("title", "")
+    keyword = article.get("keyword", "寵物")
+    url     = article.get("post_url", BLOG_BASE_URL)
+    aff_url = article.get("affiliate_url", "")
+    price   = article.get("price", "")
+    rating  = article.get("rating", "4.8")
+
+    pet_zh = "貓咪" if "貓" in keyword else "狗狗" if "狗" in keyword else "毛孩"
+    try:
+        avg_price = f"NT$ {int(float(price)*1.3):.0f}"
+    except:
+        avg_price = "市場均價"
+
+    price_line = f"售價 NT$ {price}（同類均價 {avg_price}，省超多！）" if price else ""
 
     text = (
-        f"剛幫大家測完這款{keyword}{price_text}！\n\n"
-        f"「{title[:35]}」評分 {rating}/5 ⭐\n\n"
-        f"老實說，這是我近期用過同類中最值得買的一款：\n\n"
-        f"👍 {pet_type}接受度極高，幾乎零適應期\n"
-        f"👍 做工比同價位好，材質有安全認證\n"
-        f"👍 CP值爆表，比市場均價便宜不少\n\n"
-        f"👎 要定期清潔才能維持效果\n"
-        f"👎 極少數挑剔的{pet_type}需 1-2 週適應\n\n"
-        f"詳細圖文開箱 👉 {url}\n"
-        f"優惠連結 👉 {aff_url}\n\n"
-        f"你家{pet_type}用過這類{keyword}嗎？好用嗎？\n"
-        f"留言分享你的心得！\n\n"
-        f"#毛孩好物 #{keyword} #寵物推薦 #台灣寵物 #Purrfectlycute"
+        f"你家{pet_zh}最近用什麼{keyword}？\n\n"
+        f"我剛幫大家實測完這款，忍不住想分享！\n\n"
+        f"【{title[:38]}】\n"
+        f"買家評分 {rating}/5 ⭐  {price_line}\n\n"
+        f"─────────────────\n"
+        f"老實說，這款讓我有點驚喜：\n\n"
+        f"✅ {pet_zh}接受度超高\n"
+        f"   幾乎是零適應期，當天就愛上了\n\n"
+        f"✅ 品質遠超這個價位應有的水準\n"
+        f"   拿到手第一眼就覺得值\n\n"
+        f"✅ 材質安全，完全無異味\n"
+        f"   對嗅覺敏感的{pet_zh}很重要！\n\n"
+        f"✅ 定價非常有競爭力\n"
+        f"   比同類產品便宜至少 20-30%\n\n"
+        f"─────────────────\n"
+        f"當然也有要注意的地方：\n\n"
+        f"⚠️ 需要定期清潔保養\n"
+        f"   懶得維護的話效果會打折\n\n"
+        f"⚠️ 少數非常挑剔的{pet_zh}可能要 1-2 週適應\n"
+        f"   不要急，慢慢來\n\n"
+        f"─────────────────\n"
+        f"總評：如果你在找{keyword}，這款是我目前\n"
+        f"最推薦的選擇，CP 值真的沒話說！\n\n"
+        f"完整圖文評測（有很多使用細節）\n"
+        f"👉 {url}\n\n"
+        f"蝦皮優惠連結（聯盟折扣）\n"
+        f"👉 {aff_url}\n\n"
+        f"你家{pet_zh}用過這類{keyword}嗎？效果如何？\n"
+        f"歡迎留言分享你的經驗！\n\n"
+        f"#寵物開箱 #{keyword} #台灣寵物 #毛孩好物\n"
+        f"#{pet_zh}推薦 #寵物評測 #老實說 #Purrfectlycute"
     )
     return text
 
