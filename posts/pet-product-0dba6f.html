@@ -243,6 +243,15 @@ footer a{color:#2d6a4f;text-decoration:none}
   .pros-cons{grid-template-columns:1fr}
   .article-figure img{height:200px}
 }
+
+.share-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:20px 22px;margin:28px 0;text-align:center}
+.share-title{font-size:.95em;font-weight:700;color:#166534;margin-bottom:14px}
+.share-buttons{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.share-btn{display:inline-flex;align-items:center;padding:10px 20px;border-radius:8px;font-size:.88em;font-weight:700;text-decoration:none;cursor:pointer;border:none;transition:all .15s}
+.share-btn:hover{transform:translateY(-2px);opacity:.9}
+.share-line{background:#06c755;color:white}
+.share-fb{background:#1877f2;color:white}
+.share-copy{background:#374151;color:white}
 </style>
 </head>
 <body>
@@ -370,6 +379,23 @@ footer a{color:#2d6a4f;text-decoration:none}
     </div>
   </div>
 
+    <div class="share-box">
+    <p class="share-title">📣 覺得有幫助？分享給有毛孩的朋友！</p>
+    <div class="share-buttons">
+      <a id="share-line" class="share-btn share-line" href="#" target="_blank" rel="noopener">&#x2709; LINE 分享</a>
+      <a id="share-fb"   class="share-btn share-fb"   href="#" target="_blank" rel="noopener">&#x1F4F1; FB 分享</a>
+      <button id="share-copy" class="share-btn share-copy" onclick="copyLink()">&#x1F517; 複製連結</button>
+    </div>
+    <p id="copy-msg" style="display:none;color:#16a34a;font-size:.85em;margin-top:8px">連結已複製！</p>
+  </div>
+  <script>
+  (function(){
+    var url=encodeURIComponent(location.href);
+    document.getElementById("share-line").href="https://social-plugins.line.me/lineit/share?url="+url;
+    document.getElementById("share-fb").href="https://www.facebook.com/sharer/sharer.php?u="+url;
+  })();
+  function copyLink(){navigator.clipboard.writeText(location.href).then(function(){var m=document.getElementById("copy-msg");m.style.display="block";setTimeout(function(){m.style.display="none"},2500);});}
+  </script>
   <div class="author-card">
     <div class="author-avatar">🐾</div>
     <div class="author-info">
