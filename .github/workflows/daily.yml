@@ -44,6 +44,11 @@ jobs:
     - name: 📦 安裝 Python 套件
       run: pip install anthropic requests pillow numpy
 
+    # ── 步驟3b：修復舊文章搜尋頁連結為直接商品頁 ─────────────
+    - name: 🔗 修正商品連結（搜尋頁→直接商品頁）
+      continue-on-error: true
+      run: python pipeline/fix_affiliate_links.py
+
     # ── 步驟4：主管線（找商品→生文章→建站→推送）────────────
     - name: 🚀 執行主管線
       env:

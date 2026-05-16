@@ -115,7 +115,7 @@ def download_image(img_url: str) -> str | None:
 
 # ── 露天拍賣搜尋（最可靠，本機 IP 可用）────────────────────────
 def ruten_search(query: str, min_price: int = 0, count: int = 3) -> list:
-    """搜尋露天商品，回傳 [{name, price, rating, image, ...}]"""
+    """搜尋露天商品，回傳 [{name, price, rating, image, product_url, ...}]"""
     results = []
     try:
         rows = requests.get(
@@ -133,7 +133,7 @@ def ruten_search(query: str, min_price: int = 0, count: int = 3) -> list:
             headers=H, timeout=12
         ).json()
         if not isinstance(details, list):
-            details = details if isinstance(details, list) else []
+            details = []
 
         for d in details:
             if len(results) >= count:
@@ -150,7 +150,6 @@ def ruten_search(query: str, min_price: int = 0, count: int = 3) -> list:
                 if price < min_price:
                     continue
 
-                # 圖片：Image 欄位
                 img_path = d.get("Image", "")
                 if not img_path:
                     continue
@@ -164,13 +163,18 @@ def ruten_search(query: str, min_price: int = 0, count: int = 3) -> list:
                 sales = d.get("SoldQty", 0) or 0
                 rating = min(4.9, 4.5 + min(sales, 5000) / 25000)
 
+                # 露天商品直接連結
+                prod_id = d.get("ProdId", "")
+                ruten_url = f"https://www.ruten.com.tw/item/show?{prod_id}" if prod_id else ""
+
                 results.append({
-                    "name":         d.get("ProdName", d.get("Name", query))[:50],
-                    "price":        str(int(price)),
-                    "rating":       str(round(rating, 1)),
-                    "image":        local_img,
+                    "name":        d.get("ProdName", d.get("Name", query))[:50],
+                    "price":       str(int(price)),
+                    "rating":      str(round(rating, 1)),
+                    "image":       local_img,
                     "image_remote": img_url,
-                    "source":       "ruten",
+                    "product_url": ruten_url,   # ← 直接商品頁面
+                    "source":      "ruten",
                 })
             except Exception:
                 continue
@@ -182,6 +186,7 @@ def ruten_search(query: str, min_price: int = 0, count: int = 3) -> list:
 
 # ── 蝦皮搜尋（GitHub Actions datacenter IP 可用）────────────────
 def shopee_search(query: str, min_price: int = 0, count: int = 3) -> list:
+    """搜尋蝦皮商品，回傳含直接商品頁面 URL (shopee.tw/-i.{shopId}.{itemId})"""
     results = []
     try:
         sh = {**H, "referer": "https://shopee.tw/"}
@@ -206,16 +211,50 @@ def shopee_search(query: str, min_price: int = 0, count: int = 3) -> list:
             local_img = download_image(f"https://cf.shopee.tw/file/{img_id}")
             if not local_img:
                 continue
+
+            # 蝦皮直接商品連結（不是搜尋頁）
+            shop_id = ib.get("shopid", "")
+            item_id = ib.get("itemid", "")
+            if shop_id and item_id:
+                product_url = f"https://shopee.tw/-i.{shop_id}.{item_id}"
+            else:
+                product_url = ""
+
             results.append({
-                "name":    ib.get("name", query)[:50],
-                "price":   str(int(price)),
-                "rating":  str(round(ib.get("item_rating", {}).get("rating_star", 4.8), 1)),
-                "image":   local_img,
-                "source":  "shopee",
+                "name":        ib.get("name", query)[:50],
+                "price":       str(int(price)),
+                "rating":      str(round(ib.get("item_rating", {}).get("rating_star", 4.8), 1)),
+                "image":       local_img,
+                "product_url": product_url,     # ← 直接商品頁面
+                "source":      "shopee",
             })
     except Exception as e:
         print(f"  [Shopee] {query}: {e}")
     return results
+
+
+# ── 蝦皮商品直接 URL 補查（給露天商品找對應蝦皮頁面）───────────
+def shopee_direct_url(query: str) -> str:
+    """搜尋蝦皮，只取第一個結果的直接商品 URL（GitHub Actions 可用）"""
+    try:
+        sh = {**H, "referer": "https://shopee.tw/"}
+        resp = requests.get(
+            f"https://shopee.tw/api/v4/search/search_items"
+            f"?by=relevancy&keyword={quote(query[:40])}&limit=3&newest=0"
+            f"&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2",
+            headers=sh, timeout=8
+        )
+        if resp.status_code == 200:
+            items = resp.json().get("items", [])
+            if items:
+                ib = items[0].get("item_basic", {})
+                shop_id = ib.get("shopid", "")
+                item_id = ib.get("itemid", "")
+                if shop_id and item_id:
+                    return f"https://shopee.tw/-i.{shop_id}.{item_id}"
+    except Exception:
+        pass
+    return ""
 
 
 # ── 計算綜合潛在收益分數 ─────────────────────────────────────────
@@ -255,13 +294,24 @@ def find_top_commission_products(top_n: int = 15, output_path: Path | None = Non
             if nm in seen_names:
                 continue
             seen_names.add(nm)
-            it["commission_rate"] = commission_rate
+            it["commission_rate"]   = commission_rate
             it["affiliate_keyword"] = affiliate_kw
-            it["search_query"]     = query
-            # 用蝦皮聯盟格式組 affiliate link（keyword 搜尋型）
-            it["affiliate_link"] = (
-                f"https://shopee.tw/search?keyword={quote(query[:30])}"
-            )
+            it["search_query"]      = query
+
+            # ── 商品直接連結優先順序 ──────────────────────────
+            # 1. 蝦皮直接商品頁（API 已返回 product_url）
+            # 2. 嘗試用商品名稱在蝦皮找直接 URL（GH Actions 可用）
+            # 3. 露天直接商品頁（本機永遠可用）
+            # 4. 蝦皮搜尋頁（最後 fallback）
+            direct = it.get("product_url", "")
+            if not direct and it.get("source") == "ruten":
+                direct = shopee_direct_url(nm)          # 嘗試跨平台對應
+            if not direct:
+                direct = it.get("product_url", "")      # Ruten URL
+            if not direct:
+                direct = f"https://shopee.tw/search?keyword={quote(query[:30])}"
+
+            it["affiliate_link"] = direct
             products.append(it)
         time.sleep(0.3)
 

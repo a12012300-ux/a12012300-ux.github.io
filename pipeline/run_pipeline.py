@@ -190,8 +190,12 @@ def step2_generate_articles(products: list, articles_per_run: int = 10) -> list:
         price    = product.get("price", "")
         rating   = product.get("rating", "4.8")
         kw       = product.get("affiliate_keyword", "寵物用品")
-        aff_link = product.get("affiliate_link",
-                   f"https://shopee.tw/search?keyword={quote(name[:25])}")
+        # affiliate_link 優先：蝦皮直連 / 露天直連 / 最後才用搜尋頁
+        aff_link = product.get("affiliate_link", "")
+        if not aff_link or "search?keyword" in aff_link:
+            # 沒有直連時嘗試露天 URL（至少是直接商品頁）
+            aff_link = product.get("product_url", "") or aff_link or \
+                       f"https://shopee.tw/search?keyword={quote(name[:25])}"
         img      = product.get("image", "")
 
         print(f"\n  [{i}/{min(len(products), articles_per_run)}] 生成: {name[:35]}...")
@@ -230,8 +234,8 @@ def step2_generate_articles(products: list, articles_per_run: int = 10) -> list:
             generated.append({
                 "title":         title,
                 "keyword":       kw,
-                "affiliate_url": aff_link,
-                "article_link":  f"https://shopee.tw/search?keyword={quote(name[:30])}",
+                "affiliate_url": aff_link,          # 直接商品頁 URL
+                "article_link":  aff_link,           # 同上，讓 build.py 也能正確用
                 "price":         price,
                 "rating":        rating,
                 "html_path":     str(html_path),

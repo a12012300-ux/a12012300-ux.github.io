@@ -570,9 +570,16 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     # CTA 按鈕連結：三平台各自生成
     from urllib.parse import quote as _quote
 
-    # 蝦皮
+    # 蝦皮 / 商品直接連結
+    # 優先用 affiliate_url（s.shopee.tw 短連、shopee.tw/-i.{shop}.{item}、ruten.com.tw 直連）
+    # 最後才 fallback 到搜尋頁
     raw_aff = summary.get('affiliate_url', '')
-    if raw_aff and ('s.shopee.tw' in raw_aff or 'shopee.tw' in raw_aff):
+    _is_direct = (
+        raw_aff and
+        raw_aff not in ('', '#') and
+        'search?keyword' not in raw_aff   # 不是搜尋頁
+    )
+    if _is_direct:
         shopee_url = raw_aff
     else:
         shopee_url = SHOPEE_AFFILIATE_LINKS.get(keyword,
@@ -603,14 +610,16 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     filename = f"{kw_slug}-{uid}.html"
     date_str = datetime.now().strftime("%Y-%m-%d")
 
-    # 從 article_link URL 解碼出真實商品名稱（最精確的搜尋詞）
+    # 商品名稱：優先用 summary["product_name"]，其次解碼 article_link URL param
     from urllib.parse import urlparse as _urlparse, parse_qs as _parse_qs, unquote as _unquote
-    _article_link = summary.get("article_link", "")
-    if _article_link:
-        _qs = _parse_qs(_urlparse(_article_link).query)
-        product_name = _unquote(_qs.get("keyword", [""])[0])
-    else:
-        product_name = summary.get("product_name", title[:30])
+    product_name = summary.get("product_name", "")
+    if not product_name:
+        _article_link = summary.get("article_link", "")
+        if _article_link and "keyword=" in _article_link:
+            _qs = _parse_qs(_urlparse(_article_link).query)
+            product_name = _unquote(_qs.get("keyword", [""])[0])
+    if not product_name:
+        product_name = title[:30]
     print(f"  [ProductImg] 搜尋商品名稱：{product_name}")
 
     # 若 pipeline 已預先下載圖片，直接使用（跳過重複搜尋）
