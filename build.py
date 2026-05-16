@@ -21,12 +21,14 @@ BASE_DIR = Path(__file__).parent
 # 三平台聯盟連結
 try:
     from pipeline.config import (
-        SHOPEE_AFFILIATE_LINKS, MOMO_AFFILIATE_LINKS, PCHOME_AFFILIATE_LINKS
+        SHOPEE_AFFILIATE_LINKS, MOMO_AFFILIATE_LINKS, PCHOME_AFFILIATE_LINKS,
+        MOMO_AFF_PARAMS,
     )
 except ImportError:
     SHOPEE_AFFILIATE_LINKS = {}
     MOMO_AFFILIATE_LINKS   = {"寵物用品": "https://pinkrose.info/3Qlk7"}
-    PCHOME_AFFILIATE_LINKS = {"寵物用品": "https://iorange.biz/3QlkI"}
+    PCHOME_AFFILIATE_LINKS = {"寵物用品": "https://ecshweb.pchome.com.tw/search/v4/?q=寵物用品"}
+    MOMO_AFF_PARAMS        = "lpn=O1K5FBOqsvN&n=1&gid_ic=0f83591db8ac231d39eed1f2d9da012c&osm=iChannels&utm_source=CPA&utm_medium=iChannels&utm_campaign=id_ZbOUf2KGSB"
 # 支援兩種來源：本機 pet-affiliate 目錄、或 GitHub Actions 的 pipeline 目錄
 _local_src  = Path("D:/AI/pet-affiliate/output/articles")
 _cloud_src  = BASE_DIR / "pipeline/output/articles"
@@ -589,23 +591,31 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
         shopee_url = SHOPEE_AFFILIATE_LINKS.get(keyword,
                      f"https://shopee.tw/search?keyword={_quote(title)}")
 
-    # momo
-    if "貓" in keyword:
-        momo_url = MOMO_AFFILIATE_LINKS.get("貓咪用品", MOMO_AFFILIATE_LINKS.get("寵物用品","https://pinkrose.info/3Qlk7"))
-    elif "狗" in keyword:
-        momo_url = MOMO_AFFILIATE_LINKS.get("狗狗用品", MOMO_AFFILIATE_LINKS.get("寵物用品","https://pinkrose.info/3Qlk7"))
-    elif "保健" in keyword or "益生菌" in keyword:
-        momo_url = MOMO_AFFILIATE_LINKS.get("寵物保健品", MOMO_AFFILIATE_LINKS.get("寵物用品","https://pinkrose.info/3Qlk7"))
-    else:
-        momo_url = MOMO_AFFILIATE_LINKS.get("寵物用品", "https://pinkrose.info/3Qlk7")
+    # ── momo：關鍵字專屬搜尋（保留 iChannel 聯盟追蹤參數）────────────────────
+    # 先用 keyword 直接匹配，找不到則用標題關鍵詞推斷
+    _momo_kw_map = {
+        "貓糧": "貓糧", "狗糧": "狗糧", "貓砂": "貓砂",
+        "貓零食": "貓咪零食", "狗零食": "狗狗零食",
+        "貓咪罐頭": "貓咪罐頭", "狗罐頭": "狗狗罐頭",
+        "自動餵食器": "寵物自動餵食器", "寵物外出包": "寵物外出包",
+        "寵物保健": "寵物保健品", "寵物洗毛精": "寵物洗毛精",
+        "梳毛刷": "寵物梳毛刷", "狗狗牽繩": "狗狗牽繩",
+        "寵物玩具": "寵物玩具", "貓窩": "貓窩", "狗窩": "狗狗床墊",
+        "寵物碗": "寵物碗", "貓抓板": "貓抓板",
+    }
+    _momo_search_kw = _momo_kw_map.get(keyword, keyword)
+    momo_url = (
+        f"https://www.momoshop.com.tw/search/searchShop.jsp"
+        f"?keyword={_quote(_momo_search_kw)}&{MOMO_AFF_PARAMS}"
+    )
 
-    # PChome
-    if "貓" in keyword:
-        pchome_url = PCHOME_AFFILIATE_LINKS.get("貓咪用品", PCHOME_AFFILIATE_LINKS.get("寵物用品","https://iorange.biz/3QlkI"))
-    elif "狗" in keyword:
-        pchome_url = PCHOME_AFFILIATE_LINKS.get("狗狗用品", PCHOME_AFFILIATE_LINKS.get("寵物用品","https://iorange.biz/3QlkI"))
-    else:
-        pchome_url = PCHOME_AFFILIATE_LINKS.get("寵物用品", "https://iorange.biz/3QlkI")
+    # ── PChome 24h 購物：關鍵字搜尋（已修正，不再指向旅遊網站）──────────────
+    _pc_kw = PCHOME_AFFILIATE_LINKS.get(keyword, "")
+    if not _pc_kw:
+        # fallback：動態生成 PChome 搜尋 URL
+        _pc_search_kw = _momo_kw_map.get(keyword, keyword)
+        _pc_kw = f"https://ecshweb.pchome.com.tw/search/v4/?q={_quote(_pc_search_kw)}"
+    pchome_url = _pc_kw
 
     affiliate_url = shopee_url  # 保持向後相容
 

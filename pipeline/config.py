@@ -29,14 +29,37 @@ DATA_DIR      = "pipeline/output/data"
 # 部落格網址
 BLOG_BASE_URL = "https://a12012300-ux.github.io"
 
-# PChome 聯盟連結（通路王）
+# PChome 24h 購物搜尋（舊的 iChannel 連結全部指向旅遊網站，改用直接搜尋）
+# 格式：ecshweb.pchome.com.tw/search/v4/?q=KEYWORD
 PCHOME_AFFILIATE_LINKS = {
-    "寵物用品": "https://iorange.biz/3QlkI",
-    "貓咪用品": "https://greenmall.info/3QlkI",
-    "狗狗用品": "https://joymall.co/3QlkI",
+    "寵物用品":  "https://ecshweb.pchome.com.tw/search/v4/?q=寵物用品",
+    "貓咪用品":  "https://ecshweb.pchome.com.tw/search/v4/?q=貓咪用品",
+    "狗狗用品":  "https://ecshweb.pchome.com.tw/search/v4/?q=狗狗用品",
+    "貓糧":      "https://ecshweb.pchome.com.tw/search/v4/?q=貓糧",
+    "狗糧":      "https://ecshweb.pchome.com.tw/search/v4/?q=狗糧",
+    "貓砂":      "https://ecshweb.pchome.com.tw/search/v4/?q=貓砂",
+    "貓零食":    "https://ecshweb.pchome.com.tw/search/v4/?q=貓咪零食",
+    "狗零食":    "https://ecshweb.pchome.com.tw/search/v4/?q=狗狗零食",
+    "貓咪罐頭":  "https://ecshweb.pchome.com.tw/search/v4/?q=貓咪罐頭",
+    "狗罐頭":    "https://ecshweb.pchome.com.tw/search/v4/?q=狗狗罐頭",
+    "自動餵食器": "https://ecshweb.pchome.com.tw/search/v4/?q=寵物自動餵食器",
+    "寵物外出包": "https://ecshweb.pchome.com.tw/search/v4/?q=寵物外出包",
+    "寵物保健":  "https://ecshweb.pchome.com.tw/search/v4/?q=寵物保健品",
+    "寵物洗毛精": "https://ecshweb.pchome.com.tw/search/v4/?q=寵物洗毛精",
+    "梳毛刷":    "https://ecshweb.pchome.com.tw/search/v4/?q=寵物梳毛刷",
+    "狗狗牽繩":  "https://ecshweb.pchome.com.tw/search/v4/?q=狗狗牽繩",
 }
 
-# momo 購物網聯盟連結（通路王，佣金 1.4%）
+# momo 購物聯盟追蹤參數（從 iChannel 短連結截取，用於建立關鍵字搜尋連結）
+# 格式：momoshop.com.tw/search/searchShop.jsp?keyword=KEYWORD&{MOMO_AFF_PARAMS}
+MOMO_AFF_PARAMS = (
+    "lpn=O1K5FBOqsvN&n=1"
+    "&gid_ic=0f83591db8ac231d39eed1f2d9da012c"
+    "&osm=iChannels&utm_source=CPA&utm_medium=iChannels"
+    "&utm_campaign=id_ZbOUf2KGSB&utm_content=----"
+)
+
+# 保留原短連結作為 fallback（萬一建構失敗時使用）
 MOMO_AFFILIATE_LINKS = {
     "寵物用品":  "https://pinkrose.info/3Qlk7",
     "貓咪用品":  "https://adcenter.conn.tw/3QlkA",
