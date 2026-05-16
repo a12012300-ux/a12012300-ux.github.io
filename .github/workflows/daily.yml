@@ -99,7 +99,12 @@ jobs:
         GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
       run: python pipeline/notify.py
 
-    # ── 步驟8：今日摘要 ──────────────────────────────────
+    # ── 步驟8：通知搜尋引擎有新文章（IndexNow）───────────
+    - name: 🔍 通知 Bing/搜尋引擎收錄新文章
+      continue-on-error: true
+      run: python pipeline/indexnow.py
+
+    # ── 步驟9：今日摘要 ──────────────────────────────────
     - name: 📊 今日摘要
       run: |
         echo "=================================================="
