@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       articles_count:
-        description: '今天要發幾篇文章（預設5篇）'
+        description: '今天要發幾篇文章（預設10篇）'
         required: false
         default: '10'
 
@@ -36,56 +36,48 @@ jobs:
         cache: 'pip'
 
     # ── 步驟3：安裝套件 ────────────────────────────────────
-    - name: 📦 安裝系統套件（影片用）
+    - name: 📦 安裝系統套件
       run: |
         sudo apt-get update -qq
         sudo apt-get install -y ffmpeg fonts-noto-cjk
 
     - name: 📦 安裝 Python 套件
-      run: pip install anthropic requests edge-tts "moviepy<2.0" pillow numpy google-auth google-auth-oauthlib google-api-python-client
+      run: pip install anthropic requests pillow numpy
 
-    # ── 步驟4：用 Claude AI 生成今日文章 ─────────────────────
-    - name: ✍️ AI 生成今日評測文章
+    # ── 步驟4：主管線（找商品→生文章→建站→推送）────────────
+    - name: 🚀 執行主管線
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        ARTICLES_PER_DAY: ${{ github.event.inputs.articles_count || '10' }}
-      run: python pipeline/writer.py
-
-    # ── 步驟5：建站（套用模板、更新首頁、更新 Sitemap）─────
-    - name: 🏗️ 建站（套用模板 + 更新首頁）
-      run: python build.py
-
-    # ── 步驟6：提交並推送到 GitHub Pages ──────────────────
-    - name: 🚀 推送到 GitHub Pages
+        ARTICLES_PER_DAY:  ${{ github.event.inputs.articles_count || '10' }}
+        GIT_AUTHOR_NAME:   "毛孩研究室 Bot 🐾"
+        GIT_AUTHOR_EMAIL:  "bot@maohao.tw"
+        GIT_COMMITTER_NAME:  "毛孩研究室 Bot 🐾"
+        GIT_COMMITTER_EMAIL: "bot@maohao.tw"
       run: |
         git config user.name  "毛孩研究室 Bot 🐾"
         git config user.email "bot@maohao.tw"
-        git add -A
-        # 如果沒有變更就跳過 commit
-        if git diff --staged --quiet; then
-          echo "今天沒有新文章，跳過推送"
-        else
-          git commit -m "🤖 自動發文 $(date '+%Y-%m-%d') — $(git diff --staged --name-only | grep '\.html' | wc -l | tr -d ' ') 篇新文章"
-          git push
-          echo "✅ 推送成功！"
-        fi
+        python -m pipeline.run_pipeline \
+          --n "${{ github.event.inputs.articles_count || '10' }}" \
+          --no-email
 
-    # ── 步驟6b：生成 YouTube 影片 ────────────────────────────
+    # ── 步驟5：生成 YouTube 影片（可選，失敗不影響整體）──────
     - name: 🎬 生成今日 YouTube 影片
+      continue-on-error: true
       env:
         PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
       run: python pipeline/video_maker.py
 
-    # ── 步驟6c：上傳到 YouTube ────────────────────────────
     - name: 📺 上傳影片到 YouTube
+      continue-on-error: true
       env:
         YOUTUBE_CLIENT_ID:     ${{ secrets.YOUTUBE_CLIENT_ID }}
         YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
         YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       run: python pipeline/youtube_uploader.py
 
-    # ── 步驟7：發布到 Threads + Instagram ─────────────────
-    - name: 📱 發布到社群媒體
+    # ── 步驟6：發布到社群媒體 ────────────────────────────
+    - name: 📱 發布到 Threads + Instagram
+      continue-on-error: true
       env:
         IG_USER_ID:           ${{ secrets.IG_USER_ID }}
         IG_ACCESS_TOKEN:      ${{ secrets.IG_ACCESS_TOKEN }}
@@ -94,20 +86,20 @@ jobs:
         SOCIAL_POSTS_PER_DAY: '3'
       run: python pipeline/social.py
 
-    # ── 步驟8：寄 Email 通知（含今日 IG 貼文內容）────────
-    - name: 📧 寄送 Email 通知到手機
+    # ── 步驟7：寄 Email 通知（含今日社群貼文 + 圖文卡）─────
+    - name: 📧 寄送 Email 通知
       if: always()
       env:
         GMAIL_USER:         ${{ secrets.GMAIL_USER }}
         GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
       run: python pipeline/notify.py
 
-    # ── 步驟9：顯示今日摘要 ──────────────────────────────
+    # ── 步驟8：今日摘要 ──────────────────────────────────
     - name: 📊 今日摘要
       run: |
         echo "=================================================="
         echo "  毛孩研究室 每日自動化完成"
         echo "  日期：$(date '+%Y-%m-%d %H:%M UTC')"
-        ARTICLE_COUNT=$(find posts -name "*.html" | wc -l | tr -d ' ')
+        ARTICLE_COUNT=$(find posts -name "*.html" 2>/dev/null | wc -l | tr -d ' ')
         echo "  累積文章數：$ARTICLE_COUNT 篇"
         echo "=================================================="

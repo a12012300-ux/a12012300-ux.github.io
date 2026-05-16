@@ -610,11 +610,17 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
         _qs = _parse_qs(_urlparse(_article_link).query)
         product_name = _unquote(_qs.get("keyword", [""])[0])
     else:
-        product_name = title[:30]
+        product_name = summary.get("product_name", title[:30])
     print(f"  [ProductImg] 搜尋商品名稱：{product_name}")
 
-    # 下載對應商品圖（用商品名稱精準搜尋）
-    product_imgs = _fetch_and_save_product_imgs(keyword, product_name, count=4)
+    # 若 pipeline 已預先下載圖片，直接使用（跳過重複搜尋）
+    _cached_imgs = summary.get("_product_imgs_cache", [])
+    if _cached_imgs:
+        product_imgs = [u for u in _cached_imgs if u]
+        print(f"  [ProductImg] 使用快取圖片 {len(product_imgs)} 張")
+    else:
+        # 下載對應商品圖（用商品名稱精準搜尋）
+        product_imgs = _fetch_and_save_product_imgs(keyword, product_name, count=4)
     image_url = product_imgs[0] if product_imgs else pick_image(title)
 
     read_time = calc_read_time(content)

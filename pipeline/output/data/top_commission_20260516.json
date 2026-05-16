@@ -1,0 +1,41 @@
+[
+  {
+    "name": "◎三塊錢寵物◎豆豆貓-環保豆腐砂，貓砂，可沖馬桶，原味、綠茶、扁柏、活性碳、薰衣草，8L(約3kg)",
+    "price": "1210",
+    "rating": "4.5",
+    "image": "https://a12012300-ux.github.io/posts/images/630ca89b67df.jpg",
+    "image_remote": "https://gcs.rimg.com.tw/g2/f/5d/48/21914665072968_584.jpg",
+    "source": "ruten",
+    "commission_rate": 5.0,
+    "affiliate_keyword": "貓砂",
+    "search_query": "貓砂 豆腐貓砂 6L",
+    "affiliate_link": "https://shopee.tw/search?keyword=%E8%B2%93%E7%A0%82%20%E8%B1%86%E8%85%90%E8%B2%93%E7%A0%82%206L",
+    "revenue_score": 27225.0
+  },
+  {
+    "name": "Royal Canin 皇家 GIM35 腸胃道卡路里控制配方 貓糧 2kg",
+    "price": "1183",
+    "rating": "4.5",
+    "image": "https://a12012300-ux.github.io/posts/images/b5fe0327d953.jpg",
+    "image_remote": "https://gcs.rimg.com.tw/g2/7/42/64/21634392960612_363.jpg",
+    "source": "ruten",
+    "commission_rate": 5.0,
+    "affiliate_keyword": "貓糧",
+    "search_query": "皇家貓糧 2kg",
+    "affiliate_link": "https://shopee.tw/search?keyword=%E7%9A%87%E5%AE%B6%E8%B2%93%E7%B3%A7%202kg",
+    "revenue_score": 26617.5
+  },
+  {
+    "name": "電動貓咪飲水機自動循環智能靜音流動活水不溼嘴狗水碗寵物喂水器",
+    "price": "899",
+    "rating": "4.5",
+    "image": "https://a12012300-ux.github.io/posts/images/c2226cae4f7d.jpg",
+    "image_remote": "https://a.rimg.com.tw/c1/bef/805/poi1110103/c/ab/22546421740715_558.jpg",
+    "source": "ruten",
+    "commission_rate": 6.0,
+    "affiliate_keyword": "寵物飲水機",
+    "search_query": "貓咪電動飲水機 靜音",
+    "affiliate_link": "https://shopee.tw/search?keyword=%E8%B2%93%E5%92%AA%E9%9B%BB%E5%8B%95%E9%A3%B2%E6%B0%B4%E6%A9%9F%20%E9%9D%9C%E9%9F%B3",
+    "revenue_score": 24273.0
+  }
+]
