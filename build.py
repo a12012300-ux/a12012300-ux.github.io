@@ -574,10 +574,14 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     # 優先用 affiliate_url（s.shopee.tw 短連、shopee.tw/-i.{shop}.{item}、ruten.com.tw 直連）
     # 最後才 fallback 到搜尋頁
     raw_aff = summary.get('affiliate_url', '')
+    import re as _re
     _is_direct = (
         raw_aff and
         raw_aff not in ('', '#') and
-        'search?keyword' not in raw_aff   # 不是搜尋頁
+        'search?keyword' not in raw_aff and   # 不是蝦皮搜尋頁
+        's.shopee.tw' not in raw_aff and      # 不是短連結（全都 redirect 到搜尋頁）
+        # 必須是已知直接商品頁格式：shopee.tw/-i.xxx 或 ruten.com.tw
+        bool(_re.search(r"shopee\.tw/-i\.\d+\.\d+|ruten\.com\.tw/item/show", raw_aff))
     )
     if _is_direct:
         shopee_url = raw_aff
