@@ -1,6 +1,6 @@
 """
-每日 Email 通知 v2
-- 寄送 IG + Threads 完整貼文文字（新長版）
+每日 Email 通知 v3
+- 寄送 Dcard版 + IG + Threads 完整貼文文字
 - 附上 1080×1080 圖文卡片 JPEG 附件（每篇一張）
 - 附上部落格文章連結清單
 """
@@ -25,13 +25,48 @@ SOCIAL_DIR         = BASE_DIR / "posts" / "social"
 
 
 def _load_articles_meta() -> dict:
-    """回傳 title → meta 對照表"""
+    """回傳 title -> meta 對照表"""
     meta_path = BASE_DIR / "articles_meta.json"
     if not meta_path.exists():
         return {}
     with open(meta_path, encoding="utf-8") as f:
         data = json.load(f)
     return {m["title"]: m for m in data}
+
+
+def build_dcard_text(article: dict) -> str:
+    """生成 Dcard 貼文（口語化、互動感強）"""
+    title    = article.get("title", "")
+    keyword  = article.get("keyword", "寵物")
+    post_url = article.get("post_url", BLOG_BASE_URL)
+    price    = article.get("price", "")
+    rating   = article.get("rating", "4.8")
+
+    openers = {
+        "貓砂":       "身為貓奴，貓砂問題真的困擾我超久\n試過好幾款，每次都有點失望",
+        "貓糧":       "挑食的貓真的讓人頭痛\n換了好幾個牌子才找到這款",
+        "狗糧":       "狗狗腸胃敏感讓我試了好幾款飼料\n終於找到這個讓牠穩定的",
+        "貓零食":     "我家貓超挑嘴，這款是少數讓牠秒衝過來的\n根本貓界毒品 😂",
+        "狗零食":     "訓練狗狗最需要好零食\n這款讓我家毛孩乖乖坐下等",
+        "自動餵食器": "上班族養寵物最怕的就是飼料問題\n買了這個之後整個解放",
+        "貓咪罐頭":   "主食罐選擇太多讓我頭很痛\n後來研究了一輪整理成文章",
+        "狗罐頭":     "狗罐頭成分差很多，踩過幾次雷\n這篇把我試過的整理給大家",
+        "寵物外出包": "帶毛孩出門一直是個挑戰\n試了幾款外出包之後有些心得",
+        "寵物保健":   "毛孩保健品真的很多坑\n整理了一下我用過覺得有效的",
+        "寵物洗毛精": "洗澡對毛孩來說壓力很大\n找到這款溫和的之後好多了",
+    }
+
+    opener     = openers.get(keyword, f"最近研究了一下{keyword}，整理了一篇心得")
+    price_note = f"價格大概 NT${price}，CP值很高" if price else "價格合理，CP值不錯"
+
+    return f"""{opener}
+
+{price_note}，評分 {rating}/5
+
+詳細比較和心得在這：
+{post_url}
+
+你們有用過這款嗎？或是有推薦其他的歡迎分享！"""
 
 
 def run_notify():
@@ -49,76 +84,40 @@ def run_notify():
         articles = json.load(f)
 
     meta_map = _load_articles_meta()
-    today = datetime.now().strftime("%Y-%m-%d")
+    today    = datetime.now().strftime("%Y-%m-%d")
 
-    # ── 從 social.py 取新版貼文產生器 ───────────────────────
+    # 從 social.py 取新版貼文產生器
     try:
-        from pipeline.social import build_ig_caption, build_threads_text, BLOG_BASE_URL as _BU
+        from pipeline.social import build_ig_caption, build_threads_text
     except Exception:
         build_ig_caption = build_threads_text = None
-
-
-def build_dcard_text(article: dict) -> str:
-    """生成 Dcard 貼文（口語化、互動感強）"""
-    title   = article.get("title", "")
-    keyword = article.get("keyword", "寵物")
-    post_url = article.get("post_url", BLOG_BASE_URL)
-    price   = article.get("price", "")
-    rating  = article.get("rating", "4.8")
-
-    # 依關鍵字選開場白
-    openers = {
-        "貓砂":    "身為貓奴，貓砂問題真的困擾我超久\n試過好幾款，每次都有點失望",
-        "貓糧":    "挑食的貓真的讓人頭痛\n換了好幾個牌子才找到這款",
-        "狗糧":    "狗狗腸胃敏感讓我試了好幾款飼料\n終於找到這個讓牠穩定的",
-        "貓零食":  "我家貓超挑嘴，這款是少數讓牠秒衝過來的\n根本貓界毒品 😂",
-        "狗零食":  "訓練狗狗最需要好零食\n這款讓我家毛孩乖乖坐下等",
-        "自動餵食器": "上班族養寵物最怕的就是飼料問題\n買了這個之後整個解放",
-        "貓咪罐頭": "主食罐選擇太多讓我頭很痛\n後來研究了一輪整理成文章",
-        "狗罐頭":  "狗罐頭成分差很多，踩過幾次雷\n這篇把我試過的整理給大家",
-        "寵物外出包": "帶毛孩出門一直是個挑戰\n試了幾款外出包之後有些心得",
-        "寵物保健": "毛孩保健品真的很多坑\n整理了一下我用過覺得有效的",
-        "寵物洗毛精": "洗澡對毛孩來說壓力很大\n找到這款溫和的之後好多了",
-    }
-
-    opener = openers.get(keyword, f"最近研究了一下{keyword}，整理了一篇心得")
-
-    price_note = f"價格大概 NT${price}，CP值很高" if price else "價格合理，CP值不錯"
-
-    dcard_text = f"""{opener}
-
-{price_note}，評分 {rating}/5
-
-詳細比較和心得在這：
-{post_url}
-
-你們有用過這款嗎？或是有推薦其他的歡迎分享！"""
-
-    return dcard_text
 
     # ── 組 email 正文 ────────────────────────────────────────
     msg = MIMEMultipart("mixed")
     msg["From"]    = GMAIL_USER
     msg["To"]      = GMAIL_USER
-    msg["Subject"] = f"[毛孩研究室] {today} 每日貼文包 — {len(articles)} 篇文章 + Dcard文章 + 圖文卡片"
+    msg["Subject"] = (
+        f"[毛孩研究室] {today} 每日貼文包"
+        f" — {len(articles)} 篇文章 + Dcard文章 + 圖文卡片"
+    )
 
     divider = "━" * 48
 
     body_lines = [
-        f"🐾 毛孩研究室 每日自動發文包",
+        "🐾 毛孩研究室 每日自動發文包",
         f"日期：{today}  |  今日 {len(articles)} 篇新文章",
-        f"",
+        "",
         f"📖 部落格首頁：{BLOG_BASE_URL}",
-        f"",
+        "",
         divider,
-        f"  使用說明",
+        "  使用說明",
         divider,
-        f"1. 每篇文章有三版貼文：Dcard版 + IG版 + Threads版",
-        f"2. Dcard版：直接複製貼到 dcard.tw 寵物版",
-        f"3. 對應的圖文卡片 JPEG 在附件（依序標號）",
-        f"4. 發 IG 時選圖文卡片 + 貼 IG版文字",
-        f"5. 發 Threads 時貼 Threads版文字（可附圖）",
-        f"",
+        "1. 每篇文章有三版貼文：Dcard版 + IG版 + Threads版",
+        "2. Dcard版：直接複製貼到 dcard.tw 寵物版",
+        "3. 對應的圖文卡片 JPEG 在附件（依序標號）",
+        "4. 發 IG 時選圖文卡片 + 貼 IG版文字",
+        "5. 發 Threads 時貼 Threads版文字（可附圖）",
+        "",
     ]
 
     attached_images = []  # (filename, bytes)
@@ -131,7 +130,7 @@ def build_dcard_text(article: dict) -> str:
         price   = a.get("price", "")
 
         # 從 meta 取得文章 URL 和社群卡片路徑
-        meta = meta_map.get(title, {})
+        meta     = meta_map.get(title, {})
         filename = meta.get("filename", "")
         post_url = f"{BLOG_BASE_URL}/posts/{filename}" if filename else BLOG_BASE_URL
 
@@ -144,9 +143,10 @@ def build_dcard_text(article: dict) -> str:
             if card_path.exists():
                 social_card_fname = card_name
                 with open(card_path, "rb") as cf:
-                    attached_images.append((f"圖文卡片_{idx:02d}_{keyword}.jpg", cf.read()))
+                    attached_images.append(
+                        (f"圖文卡片_{idx:02d}_{keyword}.jpg", cf.read())
+                    )
 
-        # 組貼文文字
         article_data = {
             "title":         title,
             "keyword":       keyword,
@@ -168,7 +168,10 @@ def build_dcard_text(article: dict) -> str:
                 f"#寵物 #{keyword} #台灣寵物 #Purrfectlycute"
             )
 
-        card_note = f"（圖文卡片：附件 圖文卡片_{idx:02d}_{keyword}.jpg）" if social_card_fname else "（圖文卡片未產生）"
+        card_note  = (
+            f"（圖文卡片：附件 圖文卡片_{idx:02d}_{keyword}.jpg）"
+            if social_card_fname else "（圖文卡片未產生）"
+        )
         dcard_text = build_dcard_text(article_data)
 
         body_lines += [
@@ -177,32 +180,28 @@ def build_dcard_text(article: dict) -> str:
             divider,
             f"文章連結：{post_url}",
             f"圖文卡片：{card_note}",
-            f"",
-            f"▶ Dcard 版貼文（複製貼上即可）",
-            f"  發文位置：dcard.tw → 寵物版 → 發表文章",
+            "",
+            "▶ Dcard 版貼文（複製貼上即可）",
+            "  發文位置：dcard.tw -> 寵物版 -> 發表文章",
             f"  標題建議：{title[:40]}",
-            f"─ ─ ─ ─ ─ ─ ─ ─",
+            "─ ─ ─ ─ ─ ─ ─ ─",
             dcard_text,
-            f"",
-            f"▶ IG 版貼文（發 Instagram 用）",
-            f"─ ─ ─ ─ ─ ─ ─ ─",
+            "",
+            "▶ IG 版貼文（發 Instagram 用）",
+            "─ ─ ─ ─ ─ ─ ─ ─",
             ig_text,
-            f"",
-            f"▶ Threads 版貼文（發 Threads 用）",
-            f"─ ─ ─ ─ ─ ─ ─ ─",
+            "",
+            "▶ Threads 版貼文（發 Threads 用）",
+            "─ ─ ─ ─ ─ ─ ─ ─",
             threads_text,
-            f"",
+            "",
         ]
 
-    body_lines += [
-        divider,
-        f"今日所有文章：",
-        "",
-    ] + [f"  {i}. {a.get('title', '')}" for i, a in enumerate(articles, 1)] + [
-        "",
-        f"祝收益節節高升！",
-        f"毛孩研究室 自動化系統",
-    ]
+    body_lines += (
+        [divider, "今日所有文章：", ""]
+        + [f"  {i}. {a.get('title', '')}" for i, a in enumerate(articles, 1)]
+        + ["", "祝收益節節高升！", "毛孩研究室 自動化系統"]
+    )
 
     body_text = "\n".join(body_lines)
     msg.attach(MIMEText(body_text, "plain", "utf-8"))
@@ -219,7 +218,10 @@ def build_dcard_text(article: dict) -> str:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
             s.login(GMAIL_USER, GMAIL_APP_PASSWORD)
             s.send_message(msg)
-        print(f"  [Email] 已寄送到 {GMAIL_USER}（含 {len(attached_images)} 張圖文卡片）")
+        print(
+            f"  [Email] 已寄送到 {GMAIL_USER}"
+            f"（含 {len(attached_images)} 張圖文卡片）"
+        )
     except Exception as e:
         print(f"  [Email] 寄送失敗：{e}")
 
