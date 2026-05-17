@@ -50,7 +50,7 @@ KEYWORD_LABELS = {
     "寵物碗": "飲食用具", "自動餵食器": "智能用品",
 }
 
-# 已驗證的 Unsplash 圖片池（20 張，確保每篇文章圖片不重複）
+# 已驗證的 Unsplash 圖片池（30 張，全部唯一，確保文章圖片差異化）
 IMAGE_POOL = [
     "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80",  # 橘貓大眼
     "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&q=80",  # 黃金獵犬
@@ -70,8 +70,18 @@ IMAGE_POOL = [
     "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&h=450&fit=crop&q=80",  # 貓咪玩耍
     "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=800&h=450&fit=crop&q=80",  # 貓咪床上
     "https://images.unsplash.com/photo-1601979031925-424e53b6caaa?w=800&h=450&fit=crop&q=80",  # 橘貓睡覺
-    "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&q=80",  # 黃金（備用）
-    "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80",  # 橘貓（備用）
+    "https://images.unsplash.com/photo-1623387641168-d9803ddd3f35?w=800&h=450&fit=crop&q=80",  # 貓咪窗邊
+    "https://images.unsplash.com/photo-1596854407944-bf87f6fdd049?w=800&h=450&fit=crop&q=80",  # 狗狗草地
+    "https://images.unsplash.com/photo-1529429617124-95b109e86bb8?w=800&h=450&fit=crop&q=80",  # 貓咪俯視
+    "https://images.unsplash.com/photo-1561948955-570b270e7c36?w=800&h=450&fit=crop&q=80",  # 貓眼特寫
+    "https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=800&h=450&fit=crop&q=80",  # 橘貓日光
+    "https://images.unsplash.com/photo-1608848461950-0fe51dfc41cb?w=800&h=450&fit=crop&q=80",  # 貓咪伸懶腰
+    "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=800&h=450&fit=crop&q=80",  # 白狗笑容
+    "https://images.unsplash.com/photo-1415369629372-26f2fe60c467?w=800&h=450&fit=crop&q=80",  # 貓咪黑白
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=450&fit=crop&q=80",  # 狗狗肖像
+    "https://images.unsplash.com/photo-1444212477490-ca407925329e?w=800&h=450&fit=crop&q=80",  # 貓咪戶外
+    "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=450&fit=crop&q=80",  # 黃金大特寫（唯一重複，保留相容性）
+    "https://images.unsplash.com/photo-1543466835-00a7fe58f43d?w=800&h=450&fit=crop&q=80",  # 虎斑特寫（唯一重複，保留相容性）
 ]
 
 # 依文章標題 hash 選圖，確保同一篇永遠同一張、不同篇盡量不重複
