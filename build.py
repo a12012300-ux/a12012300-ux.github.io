@@ -761,6 +761,7 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     page = page.replace('{{PRICE_VALID_UNTIL}}', price_valid)
     page = page.replace('{{PRODUCT_NAME_SCHEMA}}', product_name_schema)
     page = page.replace('{{PRODUCT_NAME_META}}', f"{product_name_schema}," if product_name_schema else "")
+    page = page.replace('{{CATEGORY_SLUG}}', KEYWORD_SLUG.get(keyword, "pet-product"))
 
     meta = {
         "title": title,
@@ -957,6 +958,13 @@ def build_sitemap(articles_meta: list):
     base_url = "https://a12012300-ux.github.io"
     today = datetime.now().strftime("%Y-%m-%d")
     urls = [f"  <url><loc>{base_url}/</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>"]
+
+    # 分類頁
+    category_dir = BASE_DIR / "category"
+    if category_dir.exists():
+        for cat_file in sorted(category_dir.glob("*.html")):
+            urls.append(f"  <url><loc>{base_url}/category/{cat_file.name}</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>")
+
     for a in articles_meta:
         urls.append(f"  <url><loc>{base_url}/posts/{a['filename']}</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>{a['date']}</lastmod></url>")
 
@@ -967,6 +975,164 @@ def build_sitemap(articles_meta: list):
     with open(BASE_DIR / "sitemap.xml", 'w', encoding='utf-8') as f:
         f.write(sitemap)
     print(f"  Sitemap 已更新：{len(articles_meta)} 個 URL")
+
+
+def build_category_pages(all_meta: list):
+    """為每個關鍵字分類建立獨立的分類頁（/category/{slug}.html）"""
+    from collections import defaultdict
+    CATEGORY_DIR = BASE_DIR / "category"
+    CATEGORY_DIR.mkdir(exist_ok=True)
+    BASE_URL = "https://a12012300-ux.github.io"
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    # 合併同義分類
+    MERGE_MAP = {"狗牽繩": "狗狗牽繩", "貓咪罐頭": "貓砂", "寵物推薦": "寵物用品"}
+
+    grouped = defaultdict(list)
+    for m in all_meta:
+        kw = MERGE_MAP.get(m.get("keyword", ""), m.get("keyword", "寵物用品"))
+        grouped[kw].append(m)
+
+    # 只建立文章數 >= 3 的分類
+    ICON = {
+        "貓糧": "🐱", "狗糧": "🐶", "貓砂": "🪣", "寵物洗毛精": "🛁",
+        "狗罐頭": "🥫", "狗零食": "🦴", "寵物保健": "💊", "狗狗牽繩": "🦮",
+        "寵物外出包": "🎒", "寵物用品": "🐾", "梳毛刷": "🪮", "狗窩": "🏠",
+        "貓零食": "🐟", "貓抓板": "🪵", "寵物飲水機": "💧", "自動餵食器": "🤖",
+    }
+
+    created = []
+    for kw, articles in grouped.items():
+        if len(articles) < 3:
+            continue
+        slug = KEYWORD_SLUG.get(kw, kw.replace(" ", "-"))
+        label = KEYWORD_LABELS.get(kw, kw)
+        icon = ICON.get(kw, "🐾")
+        desc = (f"台灣{kw}推薦懶人包！毛孩研究室整理 {len(articles)} 篇真實評測，"
+                f"比較價格、成分、CP值，附蝦皮/momo最低價連結。")
+
+        # 文章卡片 HTML
+        cards_html = ""
+        for a in sorted(articles, key=lambda x: x.get("date", ""), reverse=True):
+            title = a.get("title", "")
+            fname = a.get("filename", "")
+            img = a.get("image_url", "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&h=250&fit=crop&q=80")
+            rating = a.get("rating", "4.8")
+            price = a.get("price", "")
+            price_html = f'<span class="card-price">NT${price}</span>' if price else ""
+            stars = "★" * int(float(rating)) + "☆" * (5 - int(float(rating)))
+            short = title[:52] + "…" if len(title) > 52 else title
+            cards_html += f"""
+    <div class="card">
+      <a class="card-img-link" href="/posts/{fname}">
+        <img class="card-img" src="{img}" alt="{short}" loading="lazy"
+             onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&h=250&fit=crop&q=80'">
+      </a>
+      <div class="card-body">
+        <span class="card-tag">{label}</span>
+        <h2><a href="/posts/{fname}">{short}</a></h2>
+        <div class="card-meta">
+          <span class="stars">{stars}</span>
+          <span>{rating}/5</span>
+          {price_html}
+        </div>
+        <div class="card-footer">
+          <a class="btn-read" href="/posts/{fname}">看完整評測 →</a>
+        </div>
+      </div>
+    </div>"""
+
+        page = f"""<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7HKY0M6C9D"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}gtag('js',new Date());gtag('config','G-7HKY0M6C9D');</script>
+<title>{kw}推薦 {len(articles)} 篇評測｜毛孩研究室</title>
+<meta name="description" content="{desc}">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{BASE_URL}/category/{slug}.html">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+<meta property="og:title" content="{icon} {kw}推薦懶人包 | 毛孩研究室">
+<meta property="og:description" content="{desc}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{BASE_URL}/category/{slug}.html">
+<meta property="og:locale" content="zh_TW">
+<script type="application/ld+json">
+{{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "{kw}推薦評測 | 毛孩研究室",
+  "description": "{desc}",
+  "url": "{BASE_URL}/category/{slug}.html",
+  "inLanguage": "zh-TW",
+  "breadcrumb": {{
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {{"@type":"ListItem","position":1,"name":"首頁","item":"{BASE_URL}"}},
+      {{"@type":"ListItem","position":2,"name":"{kw}推薦","item":"{BASE_URL}/category/{slug}.html"}}
+    ]
+  }}
+}}
+</script>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:'Noto Sans TC',system-ui,sans-serif;background:#f3f4f6;color:#333}}
+header{{background:linear-gradient(135deg,#1b4332,#2d6a4f);color:white;padding:14px 0;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}}
+header a{{color:white;text-decoration:none;font-size:1.1em;font-weight:700}}
+.hero{{background:linear-gradient(135deg,#2d6a4f,#40916c);color:white;padding:40px 20px;text-align:center;margin-bottom:28px}}
+.hero h1{{font-size:1.9em;margin-bottom:8px}}
+.hero p{{opacity:.9;font-size:.95em}}
+.breadcrumb{{max-width:1100px;margin:0 auto 16px;padding:0 20px;font-size:.82em;color:#888}}
+.breadcrumb a{{color:#2d6a4f;text-decoration:none}}
+.container{{max-width:1100px;margin:0 auto;padding:0 20px 60px}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}}
+.card{{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);transition:transform .2s;display:flex;flex-direction:column}}
+.card:hover{{transform:translateY(-4px);box-shadow:0 8px 22px rgba(0,0,0,.12)}}
+.card-img-link{{display:block;overflow:hidden;height:190px}}
+.card-img{{width:100%;height:190px;object-fit:cover;transition:transform .3s}}
+.card:hover .card-img{{transform:scale(1.05)}}
+.card-body{{padding:16px 18px 14px;display:flex;flex-direction:column;flex:1}}
+.card-tag{{background:#d8f3dc;color:#1b4332;font-size:.72em;padding:3px 10px;border-radius:20px;margin-bottom:10px;font-weight:600;width:fit-content}}
+.card h2{{font-size:.97em;line-height:1.55;margin-bottom:8px;flex:1}}
+.card h2 a{{color:#1b4332;text-decoration:none}}
+.card h2 a:hover{{color:#2d6a4f;text-decoration:underline}}
+.card-meta{{display:flex;align-items:center;gap:8px;font-size:.8em;color:#888;margin-bottom:10px;flex-wrap:wrap}}
+.stars{{color:#f59e0b}}
+.card-price{{color:#dc2626;font-weight:700}}
+.card-footer{{display:flex;justify-content:flex-end;padding-top:10px;border-top:1px solid #f3f4f6;margin-top:auto}}
+.btn-read{{background:#2d6a4f;color:white;text-decoration:none;padding:7px 16px;border-radius:7px;font-size:.82em;font-weight:600}}
+.btn-read:hover{{background:#1b4332}}
+footer{{text-align:center;padding:28px 20px;color:#999;font-size:.84em;border-top:1px solid #e5e7eb;background:white;margin-top:20px}}
+footer a{{color:#2d6a4f;text-decoration:none}}
+</style>
+</head>
+<body>
+<header><a href="/">🐾 毛孩研究室</a></header>
+<div class="hero">
+  <h1>{icon} {kw}推薦懶人包</h1>
+  <p>毛孩研究室整理 {len(articles)} 篇真實評測，幫你挑到最適合毛孩的{kw}</p>
+</div>
+<div class="breadcrumb">
+  <a href="/">首頁</a> &rsaquo; {kw}推薦
+</div>
+<div class="container">
+  <div class="grid">{cards_html}
+  </div>
+</div>
+<footer>
+  <p>© 2026 <a href="/">毛孩研究室</a>｜真實飼主評測，幫你找到最棒的寵物商品</p>
+</footer>
+</body>
+</html>"""
+        out_path = CATEGORY_DIR / f"{slug}.html"
+        out_path.write_text(page, encoding="utf-8")
+        created.append((slug, kw, len(articles)))
+
+    print(f"  [Category] 建立 {len(created)} 個分類頁：" + "、".join(f"{kw}({n})" for _, kw, n in created))
+    return created
 
 
 def rebuild_all_posts():
