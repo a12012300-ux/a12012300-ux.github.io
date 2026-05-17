@@ -203,7 +203,17 @@ article img{max-width:100%;border-radius:10px;margin:16px 0;box-shadow:0 2px 10p
 .cons li::before{content:"✗";position:absolute;left:0;font-weight:700}
 /* ── CTA 購買區 ── */
 .cta-box{background:linear-gradient(135deg,#d8f3dc,#b7e4c7);border-radius:16px;padding:26px 28px;margin:36px 0;text-align:center;border:1px solid #95d5b2;box-shadow:0 2px 12px rgba(82,183,136,.15)}
+.cta-title{margin-bottom:6px!important;font-weight:700;color:#1b4332;font-size:1.12em}
+.cta-sub{margin-bottom:18px!important;color:#2d6a4f;font-size:.88em;font-weight:400!important}
 .cta-box p{margin-bottom:18px;font-weight:700;color:#1b4332;font-size:1.08em}
+/* ── 手機浮動購買鍵 ── */
+.sticky-buy{position:fixed;bottom:0;left:0;right:0;background:#1b4332;color:white;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;z-index:999;transform:translateY(100%);transition:transform .3s;box-shadow:0 -3px 16px rgba(0,0,0,.25)}
+.sticky-buy.show{transform:translateY(0)}
+.sticky-buy-info{display:flex;flex-direction:column;gap:2px}
+.sticky-price{font-size:1.2em;font-weight:800;color:#ffd166}
+.sticky-label{font-size:.78em;opacity:.85}
+.sticky-btn{background:#ee4d2d;color:white;text-decoration:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:.95em;white-space:nowrap}
+@media(min-width:768px){.sticky-buy{display:none}}
 .cta-buttons{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
 .cta-btn{display:inline-block;color:white;text-decoration:none;padding:14px 28px;border-radius:10px;font-size:.95em;font-weight:700;transition:all .2s;box-shadow:0 3px 10px rgba(0,0,0,.2)}
 .cta-btn:hover{transform:translateY(-2px);box-shadow:0 5px 16px rgba(0,0,0,.3);opacity:.92}
@@ -374,13 +384,34 @@ footer a{color:#2d6a4f;text-decoration:none}
   
 
   <div class="cta-box">
-    <p>🛒 三大平台比價，找最划算的！</p>
+    <p class="cta-title">💰 三大平台比價，現在買最划算！</p>
+    <p class="cta-sub">👇 點下方按鈕直接跳轉，價格不含隱藏費用</p>
     <div class="cta-buttons">
-      <a class="cta-btn btn-shopee" href="https://www.ruten.com.tw/item/show?22137137312800" target="_blank" rel="nofollow sponsored">🛒 蝦皮購物</a>
-      <a class="cta-btn btn-momo"   href="https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E5%AF%B5%E7%89%A9%E7%94%A8%E5%93%81&lpn=O1K5FBOqsvN&n=1&gid_ic=0f83591db8ac231d39eed1f2d9da012c&osm=iChannels&utm_source=CPA&utm_medium=iChannels&utm_campaign=id_ZbOUf2KGSB&utm_content=----"   target="_blank" rel="nofollow sponsored">📦 momo購物</a>
-      <a class="cta-btn btn-pchome" href="https://ecshweb.pchome.com.tw/search/v4/?q=寵物用品" target="_blank" rel="nofollow sponsored">💻 PChome</a>
+      <a class="cta-btn btn-shopee" href="https://www.ruten.com.tw/item/show?22137137312800" target="_blank" rel="nofollow sponsored">🛒 蝦皮最低價</a>
+      <a class="cta-btn btn-momo"   href="https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E5%AF%B5%E7%89%A9%E7%94%A8%E5%93%81&lpn=O1K5FBOqsvN&n=1&gid_ic=0f83591db8ac231d39eed1f2d9da012c&osm=iChannels&utm_source=CPA&utm_medium=iChannels&utm_campaign=id_ZbOUf2KGSB&utm_content=----"   target="_blank" rel="nofollow sponsored">📦 momo快速到貨</a>
+      <a class="cta-btn btn-pchome" href="https://ecshweb.pchome.com.tw/search/v4/?q=寵物用品" target="_blank" rel="nofollow sponsored">💻 PChome 24h</a>
     </div>
   </div>
+
+  <!-- 手機固定浮動購買鍵 -->
+  <div class="sticky-buy" id="stickyBuy">
+    <div class="sticky-buy-info">
+      <span class="sticky-price">NT$ </span>
+      <span class="sticky-label">寵物用品推薦</span>
+    </div>
+    <a class="sticky-btn" href="https://www.ruten.com.tw/item/show?22137137312800" target="_blank" rel="nofollow sponsored">立即購買 →</a>
+  </div>
+  <script>
+  (function(){
+    var bar = document.getElementById('stickyBuy');
+    var shown = false;
+    window.addEventListener('scroll', function(){
+      var y = window.scrollY || window.pageYOffset;
+      if(y > 400 && !shown){ bar.classList.add('show'); shown = true; }
+      else if(y <= 400 && shown){ bar.classList.remove('show'); shown = false; }
+    });
+  })();
+  </script>
 
   <!-- 分享區 -->
   <div class="share-box">
@@ -427,7 +458,7 @@ footer a{color:#2d6a4f;text-decoration:none}
     </div>
   </div>
 
-  <div class="related-articles"><h2>📚 延伸閱讀</h2><div class="related-grid"><a href="/posts/pet-product-aff6c8.html" class="related-card"><img src="https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=800&h=450&fit=crop&q=80" alt="【狗狗牽繩推薦】夜間遛狗安全救星｜反光伸縮牽繩5米開箱評測" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80'"><div class="related-info"><span class="related-tag">寵物用品</span><div class="related-title">【狗狗牽繩推薦】夜間遛狗安全救星｜反光伸縮牽繩5米開箱評測</div><div class="related-rating">★ 4.8</div></div></a><a href="/posts/pet-product-85597c.html" class="related-card"><img src="https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=800&h=450&fit=crop&q=80" alt="希爾斯完美消化狗糧評測｜消化不好的毛孩救星" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80'"><div class="related-info"><span class="related-tag">寵物用品</span><div class="related-title">希爾斯完美消化狗糧評測｜消化不好的毛孩救星</div><div class="related-rating">★ 4.8</div></div></a><a href="/posts/pet-carrier-8f8920.html" class="related-card"><img src="https://a12012300-ux.github.io/posts/images/023e769a92e0.jpg" alt="Catidea太空艙寵物外出包評測｜貓狗都愛的透視外出包推薦" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80'"><div class="related-info"><span class="related-tag">外出用品</span><div class="related-title">Catidea太空艙寵物外出包評測｜貓狗都愛的透視外出包推薦</div><div class="related-rating">★ 4.7</div></div></a><a href="/posts/cat-food-b3763f.html" class="related-card"><img src="https://a12012300-ux.github.io/posts/images/dd2382d5dd26.jpg" alt="皇家室內貓乾糧 2kg 評測｜4000+飼主愛用的平價貓糧推薦" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80'"><div class="related-info"><span class="related-tag">貓咪飲食</span><div class="related-title">皇家室內貓乾糧 2kg 評測｜4000+飼主愛用的平價貓糧推薦</div><div class="related-rating">★ 4.7</div></div></a></div></div>
+  <div class="related-articles"><h2>📚 延伸閱讀</h2><div class="related-grid"><a href="/posts/pet-product-b8a068.html" class="related-card"><img src="https://a12012300-ux.github.io/posts/images/272b41919191.jpg" alt="皇家室內貓乾糧評測｜NT$850讓挑食貓咪愛上進食" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80'"><div class="related-info"><span class="related-tag">寵物用品</span><div class="related-title">皇家室內貓乾糧評測｜NT$850讓挑食貓咪愛上進食</div><div class="related-rating">★ 4.8</div></div></a><a href="/posts/pet-product-aff6c8.html" class="related-card"><img src="https://images.unsplash.com/photo-1543466835-00a7fe58f43d?w=800&h=450&fit=crop&q=80" alt="【狗狗牽繩推薦】夜間遛狗安全救星｜反光伸縮牽繩5米開箱評測" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80'"><div class="related-info"><span class="related-tag">寵物用品</span><div class="related-title">【狗狗牽繩推薦】夜間遛狗安全救星｜反光伸縮牽繩5米開箱評測</div><div class="related-rating">★ 4.8</div></div></a><a href="/posts/dog-food-4205a5.html" class="related-card"><img src="https://a12012300-ux.github.io/posts/images/dd2382d5dd26.jpg" alt="希爾斯完美消化狗糧評測｜消化好、毛髮亮的狗糧推薦" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80'"><div class="related-info"><span class="related-tag">狗狗飲食</span><div class="related-title">希爾斯完美消化狗糧評測｜消化好、毛髮亮的狗糧推薦</div><div class="related-rating">★ 4.7</div></div></a><a href="/posts/pet-product-05adce.html" class="related-card"><img src="https://images.unsplash.com/photo-1444212477490-ca407925329e?w=800&h=450&fit=crop&q=80" alt="防水耐抓狗狗墊評測｜L號狗窩必買，2700位飼主點頭推薦" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=450&fit=crop&q=80'"><div class="related-info"><span class="related-tag">寵物推薦</span><div class="related-title">防水耐抓狗狗墊評測｜L號狗窩必買，2700位飼主點頭推薦</div><div class="related-rating">★ 4.8</div></div></a></div></div>
   <p class="disclaimer">
     本文含有聯盟行銷連結，您點擊後購買商品，我們將獲得小額佣金，不影響您的購買價格。感謝您的支持，讓我們能持續提供免費的寵物商品評測。
   </p>
