@@ -535,6 +535,19 @@ def extract_title(html: str) -> str:
     return "寵物商品評測"
 
 
+def make_description(title: str, keyword: str, price: str = "", rating: str = "4.8") -> str:
+    """生成獨特的 155 字元以內 meta description"""
+    price_part = f"NT${price}、" if price else ""
+    kw_label = KEYWORD_LABELS.get(keyword, keyword)
+    desc = (
+        f"【毛孩研究室】{title}。"
+        f"真實飼主評測，{price_part}評分 {rating}/5，"
+        f"附蝦皮/momo/PChome 比價連結。"
+        f"台灣{kw_label}推薦，讓毛孩吃好用好！"
+    )
+    return desc[:155]
+
+
 def extract_description(html: str) -> str:
     m = re.search(r'<meta name="description"[^>]*content="([^"]*)"', html, re.IGNORECASE)
     if m:
@@ -563,11 +576,11 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
         src_html = f.read()
 
     title = extract_title(src_html)
-    description = extract_description(src_html)
     content = extract_body(src_html)
     keyword = summary.get('keyword', '寵物推薦')
     price = str(summary.get('price', ''))
     rating = str(summary.get('rating', '4.8'))
+    description = make_description(title, keyword, price, rating)
 
     # CTA 按鈕連結：三平台各自生成
     from urllib.parse import quote as _quote
@@ -622,7 +635,8 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     kw_slug = KEYWORD_SLUG.get(keyword, "pet-product")
     uid = hashlib.md5(title.encode()).hexdigest()[:6]
     filename = f"{kw_slug}-{uid}.html"
-    date_str = datetime.now().strftime("%Y-%m-%d")
+    # 優先保留 meta 裡的原始發佈日，避免 rebuild 時全改成今天
+    date_str = summary.get('date', '') or datetime.now().strftime("%Y-%m-%d")
 
     # 商品名稱：優先用 summary["product_name"]，其次解碼 article_link URL param
     from urllib.parse import urlparse as _urlparse, parse_qs as _parse_qs, unquote as _unquote
@@ -931,7 +945,8 @@ def _inject_related_articles(all_meta: list):
 
 def build_sitemap(articles_meta: list):
     base_url = "https://a12012300-ux.github.io"
-    urls = [f"  <url><loc>{base_url}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>"]
+    today = datetime.now().strftime("%Y-%m-%d")
+    urls = [f"  <url><loc>{base_url}/</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>"]
     for a in articles_meta:
         urls.append(f"  <url><loc>{base_url}/posts/{a['filename']}</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>{a['date']}</lastmod></url>")
 
@@ -1020,6 +1035,7 @@ def rebuild_all_posts():
             summary = {"keyword": keyword, "price": price, "rating": rating,
                        "affiliate_url": aff_url, "title": title,
                        "product_name": product_name,
+                       "date": m.get("date", ""),   # 保留原始發佈日
                        # 重建出 article_link 讓 build_article_page 解碼商品名
                        "article_link": (
                            f"https://shopee.tw/search?keyword={product_name}"
