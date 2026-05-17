@@ -57,11 +57,50 @@ def run_notify():
     except Exception:
         build_ig_caption = build_threads_text = None
 
+
+def build_dcard_text(article: dict) -> str:
+    """生成 Dcard 貼文（口語化、互動感強）"""
+    title   = article.get("title", "")
+    keyword = article.get("keyword", "寵物")
+    post_url = article.get("post_url", BLOG_BASE_URL)
+    price   = article.get("price", "")
+    rating  = article.get("rating", "4.8")
+
+    # 依關鍵字選開場白
+    openers = {
+        "貓砂":    "身為貓奴，貓砂問題真的困擾我超久\n試過好幾款，每次都有點失望",
+        "貓糧":    "挑食的貓真的讓人頭痛\n換了好幾個牌子才找到這款",
+        "狗糧":    "狗狗腸胃敏感讓我試了好幾款飼料\n終於找到這個讓牠穩定的",
+        "貓零食":  "我家貓超挑嘴，這款是少數讓牠秒衝過來的\n根本貓界毒品 😂",
+        "狗零食":  "訓練狗狗最需要好零食\n這款讓我家毛孩乖乖坐下等",
+        "自動餵食器": "上班族養寵物最怕的就是飼料問題\n買了這個之後整個解放",
+        "貓咪罐頭": "主食罐選擇太多讓我頭很痛\n後來研究了一輪整理成文章",
+        "狗罐頭":  "狗罐頭成分差很多，踩過幾次雷\n這篇把我試過的整理給大家",
+        "寵物外出包": "帶毛孩出門一直是個挑戰\n試了幾款外出包之後有些心得",
+        "寵物保健": "毛孩保健品真的很多坑\n整理了一下我用過覺得有效的",
+        "寵物洗毛精": "洗澡對毛孩來說壓力很大\n找到這款溫和的之後好多了",
+    }
+
+    opener = openers.get(keyword, f"最近研究了一下{keyword}，整理了一篇心得")
+
+    price_note = f"價格大概 NT${price}，CP值很高" if price else "價格合理，CP值不錯"
+
+    dcard_text = f"""{opener}
+
+{price_note}，評分 {rating}/5
+
+詳細比較和心得在這：
+{post_url}
+
+你們有用過這款嗎？或是有推薦其他的歡迎分享！"""
+
+    return dcard_text
+
     # ── 組 email 正文 ────────────────────────────────────────
     msg = MIMEMultipart("mixed")
     msg["From"]    = GMAIL_USER
     msg["To"]      = GMAIL_USER
-    msg["Subject"] = f"[毛孩研究室] {today} 每日貼文包 — {len(articles)} 篇文章 + 圖文卡片"
+    msg["Subject"] = f"[毛孩研究室] {today} 每日貼文包 — {len(articles)} 篇文章 + Dcard文章 + 圖文卡片"
 
     divider = "━" * 48
 
@@ -74,10 +113,11 @@ def run_notify():
         divider,
         f"  使用說明",
         divider,
-        f"1. 每篇文章有兩版貼文：IG版 & Threads版",
-        f"2. 對應的圖文卡片 JPEG 在附件（依序標號）",
-        f"3. 發 IG 時選圖文卡片 + 貼 IG版文字",
-        f"4. 發 Threads 時貼 Threads版文字（可附圖）",
+        f"1. 每篇文章有三版貼文：Dcard版 + IG版 + Threads版",
+        f"2. Dcard版：直接複製貼到 dcard.tw 寵物版",
+        f"3. 對應的圖文卡片 JPEG 在附件（依序標號）",
+        f"4. 發 IG 時選圖文卡片 + 貼 IG版文字",
+        f"5. 發 Threads 時貼 Threads版文字（可附圖）",
         f"",
     ]
 
@@ -129,6 +169,7 @@ def run_notify():
             )
 
         card_note = f"（圖文卡片：附件 圖文卡片_{idx:02d}_{keyword}.jpg）" if social_card_fname else "（圖文卡片未產生）"
+        dcard_text = build_dcard_text(article_data)
 
         body_lines += [
             divider,
@@ -136,6 +177,12 @@ def run_notify():
             divider,
             f"文章連結：{post_url}",
             f"圖文卡片：{card_note}",
+            f"",
+            f"▶ Dcard 版貼文（複製貼上即可）",
+            f"  發文位置：dcard.tw → 寵物版 → 發表文章",
+            f"  標題建議：{title[:40]}",
+            f"─ ─ ─ ─ ─ ─ ─ ─",
+            dcard_text,
             f"",
             f"▶ IG 版貼文（發 Instagram 用）",
             f"─ ─ ─ ─ ─ ─ ─ ─",
