@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
       articles_count:
-        description: '今天要發幾篇文章（預設10篇）'
+        description: '今天要發幾篇文章（預設5篇）'
         required: false
-        default: '10'
+        default: '5'
 
 jobs:
   daily-post:
@@ -53,7 +53,7 @@ jobs:
     - name: 🚀 執行主管線
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        ARTICLES_PER_DAY:  ${{ github.event.inputs.articles_count || '10' }}
+        ARTICLES_PER_DAY:  ${{ github.event.inputs.articles_count || '5' }}
         GIT_AUTHOR_NAME:   "毛孩研究室 Bot 🐾"
         GIT_AUTHOR_EMAIL:  "bot@maohao.tw"
         GIT_COMMITTER_NAME:  "毛孩研究室 Bot 🐾"
@@ -62,7 +62,7 @@ jobs:
         git config user.name  "毛孩研究室 Bot 🐾"
         git config user.email "bot@maohao.tw"
         python -m pipeline.run_pipeline \
-          --n "${{ github.event.inputs.articles_count || '10' }}" \
+          --n "${{ github.event.inputs.articles_count || '5' }}" \
           --no-email
 
     # ── 步驟5：生成 YouTube 影片（可選，失敗不影響整體）──────
