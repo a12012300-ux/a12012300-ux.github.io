@@ -233,9 +233,9 @@ def inject_images(content: str, keyword: str, article_idx: int,
         return (
             match.group(0) +
             f'\n<figure class="article-figure">'
-            f'<img src="{img}" alt="{keyword}商品圖" loading="lazy" '
+            f'<img src="{img}" alt="{keyword}推薦商品實拍" loading="lazy" '
             f'onerror="this.onerror=null;this.src=\'{fallback_img}\'">'
-            f'<figcaption>{pet_label}好物推薦 — {keyword}精選</figcaption>'
+            f'<figcaption>{pet_label}推薦 — {keyword}精選好物</figcaption>'
             f'</figure>\n'
         )
 
@@ -512,7 +512,7 @@ def generate_related_articles(current_filename: str, current_keyword: str,
         short  = title[:38] + '…' if len(title) > 38 else title
         fallback = IMAGE_POOL[0]
         html += (
-            f'<a href="{fname}" class="related-card">'
+            f'<a href="/posts/{fname}" class="related-card">'
             f'<img src="{img}" alt="{short}" loading="lazy" '
             f'onerror="this.onerror=null;this.src=\'{fallback}\'">'
             f'<div class="related-info">'
@@ -891,7 +891,7 @@ def run_build():
 
 
 def _inject_related_articles(all_meta: list):
-    """對每篇文章注入相關文章區塊（第二遍處理，需要完整 meta 列表）"""
+    """對每篇文章注入相關文章區塊（強制清除舊區塊再重新注入）"""
     injected = 0
     for m in all_meta:
         post_path = ARTICLES_DST / m['filename']
@@ -899,21 +899,29 @@ def _inject_related_articles(all_meta: list):
             continue
         try:
             html = post_path.read_text(encoding='utf-8')
-            # 如果已有相關文章區塊就跳過
-            if 'related-articles' in html and 'related-card' in html:
-                continue
+
+            # 強制清除舊的相關文章區塊（貪婪移除整個 div）
+            html = re.sub(
+                r'<div class="related-articles">[\s\S]*?</div>\s*</div>',
+                '', html
+            )
+
             related_html = generate_related_articles(
                 m['filename'], m.get('keyword', ''), all_meta, count=4
             )
             if not related_html:
                 continue
-            # 替換空的 placeholder 或插入在 disclaimer 前
-            if '{{RELATED_ARTICLES}}' in html:
-                html = html.replace('{{RELATED_ARTICLES}}', related_html)
-            else:
+
+            # 優先插在 disclaimer 前，否則插在 </article> 前
+            if '<p class="disclaimer">' in html:
                 html = html.replace(
                     '<p class="disclaimer">', related_html + '\n  <p class="disclaimer">', 1
                 )
+            elif '</article>' in html:
+                html = html.replace('</article>', related_html + '\n</article>', 1)
+            else:
+                continue
+
             post_path.write_text(html, encoding='utf-8')
             injected += 1
         except Exception as e:
