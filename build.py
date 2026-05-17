@@ -105,6 +105,9 @@ KEYWORD_SLUG = {
     "狗狗牽繩":"dog-leash", "狗窩":"dog-bed", "寵物玩具":"pet-toy",
     "寵物外出包":"pet-carrier", "寵物洗毛精":"pet-shampoo",
     "寵物保健":"pet-health", "寵物碗":"pet-bowl", "自動餵食器":"auto-feeder",
+    "寵物用品":"pet-product", "梳毛刷":"pet-grooming", "寵物飲水機":"pet-fountain",
+    "寵物玩具":"pet-toy", "貓零食":"cat-snack", "貓窩":"cat-bed",
+    "貓抓板":"cat-scratcher",
 }
 
 
