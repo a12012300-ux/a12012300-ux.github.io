@@ -81,6 +81,7 @@ def build_feed():
     <title>毛孩研究室 | 台灣寵物用品評測</title>
     <link>{BASE_URL}</link>
     <atom:link href="{BASE_URL}/feed.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="https://pubsubhubbub.appspot.com/" rel="hub" type="application/rss+xml"/>
     <description>真實飼主評測台灣寵物用品，比較蝦皮/momo/PChome最低價，每日更新。</description>
     <language>zh-TW</language>
     <lastBuildDate>{today_rfc}</lastBuildDate>
@@ -99,6 +100,19 @@ def build_feed():
 
     FEED_PATH.write_text(feed, encoding="utf-8")
     print(f"  [Feed] feed.xml 更新完成（{len(articles)} 篇文章）→ {FEED_PATH.name}")
+
+    # Ping Google PubSubHubbub（讓 Google 即時知道 feed 有新文章）
+    try:
+        import requests as _req
+        hubs = [
+            "https://pubsubhubbub.appspot.com/publish",
+            "https://push.superfeedr.com/",
+        ]
+        for hub in hubs:
+            r = _req.post(hub, data={"hub.mode": "publish", "hub.url": f"{BASE_URL}/feed.xml"}, timeout=10)
+            print(f"  [Feed] PubSubHub ping {hub.split('/')[2]}: {r.status_code}")
+    except Exception as e:
+        print(f"  [Feed] PubSubHub ping 失敗（不影響 feed）: {e}")
 
 
 if __name__ == "__main__":

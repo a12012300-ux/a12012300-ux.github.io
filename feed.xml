@@ -7,9 +7,10 @@
     <title>毛孩研究室 | 台灣寵物用品評測</title>
     <link>https://a12012300-ux.github.io</link>
     <atom:link href="https://a12012300-ux.github.io/feed.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="https://pubsubhubbub.appspot.com/" rel="hub" type="application/rss+xml"/>
     <description>真實飼主評測台灣寵物用品，比較蝦皮/momo/PChome最低價，每日更新。</description>
     <language>zh-TW</language>
-    <lastBuildDate>Wed, 20 May 2026 10:20:46 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 20 May 2026 10:31:14 +0800</lastBuildDate>
     <managingEditor>bot@maohao.tw (毛孩研究室)</managingEditor>
     <webMaster>bot@maohao.tw (毛孩研究室)</webMaster>
     <ttl>1440</ttl>
