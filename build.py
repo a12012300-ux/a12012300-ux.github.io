@@ -680,14 +680,18 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     content = inject_images(content, keyword, article_idx, product_imgs=product_imgs)
 
     # 生成社群圖文卡片（背景用商品圖）
-    date_str_nodash = datetime.now().strftime("%Y%m%d")
-    social_card_filename = f"{date_str_nodash}_{article_idx % 100:02d}.jpg"
+    # 用文章 uid（title hash 前6碼）當檔名，確保唯一且 rebuild 不會覆蓋其他文章
+    social_card_filename = f"card-{uid}.jpg"
     social_card_path = SOCIAL_DIR / social_card_filename
     font_p = _find_cjk_font()
-    social_card_ok = generate_social_card(
-        title, keyword, price, rating, image_url,
-        font_p, social_card_path
-    )
+    # 已存在就跳過，避免 rebuild 覆蓋已生成的卡片
+    if social_card_path.exists():
+        social_card_ok = True
+    else:
+        social_card_ok = generate_social_card(
+            title, keyword, price, rating, image_url,
+            font_p, social_card_path
+        )
     social_image_url = (
         f"https://a12012300-ux.github.io/posts/social/{social_card_filename}"
         if social_card_ok else image_url
