@@ -55,26 +55,42 @@ def submit_urls(urls: list[str]) -> bool:
 
 
 def get_today_urls() -> list[str]:
-    """取得今天新發佈的文章 URL"""
-    if not META_PATH.exists():
-        return []
-    meta = json.loads(META_PATH.read_text(encoding="utf-8"))
-    today = datetime.now().strftime("%Y-%m-%d")
-    urls = []
-    for a in meta:
-        if a.get("date", "") == today:
-            urls.append(f"{BASE_URL}/posts/{a['filename']}")
+    """取得今天新發佈的文章 URL + 首頁 + 分類頁"""
+    urls = [BASE_URL + "/", BASE_URL + "/feed.xml"]
+
+    # 今日新文章
+    if META_PATH.exists():
+        meta = json.loads(META_PATH.read_text(encoding="utf-8"))
+        today = datetime.now().strftime("%Y-%m-%d")
+        for a in meta:
+            if a.get("date", "") == today:
+                urls.append(f"{BASE_URL}/posts/{a['filename']}")
+
+    # 分類頁（每次都提交，讓搜尋引擎知道分類頁已更新）
+    cat_dir = ROOT / "category"
+    if cat_dir.exists():
+        for cat_file in sorted(cat_dir.glob("*.html")):
+            urls.append(f"{BASE_URL}/category/{cat_file.name}")
+
     return urls
 
 
 def get_all_urls() -> list[str]:
-    """取得所有文章 URL"""
-    if not META_PATH.exists():
-        return []
-    meta = json.loads(META_PATH.read_text(encoding="utf-8"))
-    urls = [BASE_URL + "/"]  # 首頁
-    for a in meta:
-        urls.append(f"{BASE_URL}/posts/{a['filename']}")
+    """取得所有 URL（文章 + 分類 + 首頁 + feed）"""
+    urls = [BASE_URL + "/", BASE_URL + "/feed.xml"]
+
+    # 所有文章
+    if META_PATH.exists():
+        meta = json.loads(META_PATH.read_text(encoding="utf-8"))
+        for a in meta:
+            urls.append(f"{BASE_URL}/posts/{a['filename']}")
+
+    # 分類頁
+    cat_dir = ROOT / "category"
+    if cat_dir.exists():
+        for cat_file in sorted(cat_dir.glob("*.html")):
+            urls.append(f"{BASE_URL}/category/{cat_file.name}")
+
     return urls
 
 
@@ -88,14 +104,11 @@ if __name__ == "__main__":
         print(f"  [IndexNow] 提交全部 {len(urls)} 個網址...")
     else:
         urls = get_today_urls()
-        if not urls:
-            # 今天沒有新文章，提交首頁
-            urls = [BASE_URL + "/"]
         print(f"  [IndexNow] 提交今日 {len(urls)} 個網址...")
 
-    for u in urls[:5]:
+    for u in urls[:8]:
         print(f"    {u}")
-    if len(urls) > 5:
+    if len(urls) > 8:
         print(f"    ...（共 {len(urls)} 個）")
 
     submit_urls(urls)
