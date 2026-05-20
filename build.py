@@ -284,12 +284,39 @@ def build_product_overview(title: str, image_url: str, price: str, rating: str,
 </div>'''
 
 
+# 各分類關鍵字的獨特色彩方案（品牌主色, 強調色, 卡片背景, 頁尾色）
+KEYWORD_COLORS = {
+    "貓糧":     ((15, 80, 140),  (255, 120, 30),  (245, 249, 255), (10, 55, 100)),   # 藍
+    "貓砂":     ((100, 60, 20),  (240, 170, 0),   (255, 252, 240), (75, 42, 10)),    # 棕金
+    "貓零食":   ((140, 30, 100), (255, 90, 160),  (255, 245, 252), (100, 20, 70)),   # 紫粉
+    "貓咪罐頭": ((20, 100, 160), (255, 90, 50),   (240, 250, 255), (15, 70, 115)),   # 天藍
+    "貓抓板":   ((80, 50, 20),   (220, 140, 0),   (255, 252, 240), (55, 35, 10)),    # 木棕
+    "貓窩":     ((90, 40, 120),  (200, 100, 255), (250, 243, 255), (65, 25, 90)),    # 深紫
+    "狗糧":     ((160, 50, 20),  (255, 200, 0),   (255, 248, 240), (120, 35, 10)),   # 橙紅
+    "狗零食":   ((200, 100, 0),  (255, 230, 50),  (255, 252, 235), (150, 70, 0)),    # 橙黃
+    "狗罐頭":   ((140, 70, 20),  (255, 140, 50),  (255, 250, 240), (100, 50, 10)),   # 赭橙
+    "狗狗牽繩": ((30, 100, 70),  (80, 220, 160),  (240, 255, 248), (15, 70, 50)),    # 翠綠
+    "狗窩":     ((50, 80, 130),  (120, 180, 255), (240, 246, 255), (35, 58, 100)),   # 鋼藍
+    "自動餵食器":((20, 60, 110), (0,  200, 220),  (235, 252, 255), (10, 42, 85)),    # 科技藍
+    "寵物外出包":((60, 90, 30),  (180, 220, 0),   (247, 255, 235), (40, 65, 15)),    # 草綠
+    "寵物洗毛精":((0,  120, 140),(50,  220, 200), (235, 255, 253), (0, 85, 100)),    # 青綠
+    "寵物保健":  ((100, 40, 140),(200, 100, 255), (250, 242, 255), (75, 25, 105)),   # 葡萄紫
+    "梳毛刷":   ((130, 80, 10),  (255, 180, 30),  (255, 252, 238), (95, 58, 5)),     # 琥珀
+    "寵物飲水機":((10, 90, 150), (0,  190, 255),  (235, 250, 255), (5, 65, 110)),    # 海藍
+    "寵物碗":   ((120, 30, 80),  (255, 100, 180), (255, 243, 252), (90, 15, 58)),    # 玫紅
+    "寵物玩具": ((160, 100, 0),  (255, 200, 50),  (255, 252, 230), (120, 70, 0)),    # 薑黃
+}
+# 預設（不在對照表的分類）
+_DEFAULT_COLORS = ((30, 90, 60), (255, 90, 50), (250, 248, 244), (18, 66, 45))
+
+
 def generate_social_card(title: str, keyword: str, price: str, rating: str,
                           bg_url: str, font_path: str, out_path: Path) -> bool:
     """
     生成 1080×1080 IG 社群圖文卡片（現代分割版）
     上半：清晰商品圖（無模糊）
     下半：白底卡片 — 品牌標 / 標題 / 星星 / 價格 Badge / CTA
+    每個分類有獨立色彩主題，讓不同文章的卡片一眼可辨
     """
     try:
         import requests as _req, io as _io
@@ -297,16 +324,16 @@ def generate_social_card(title: str, keyword: str, price: str, rating: str,
 
         SW, SH = 1080, 1080
 
-        # ── 色盤 ──────────────────────────────────────────────
-        C_BRAND    = (30,  90,  60)   # 深綠  品牌條
-        C_ACCENT   = (255, 90,  50)   # 橙紅  價格 badge
-        C_GOLD     = (255, 185,  0)   # 金黃  星星
-        C_DARK     = (28,  28,  28)   # 近黑  標題文字
-        C_GRAY     = (110, 110, 110)  # 灰    副標
-        C_WHITE    = (255, 255, 255)
-        C_BG       = (250, 248, 244)  # 米白  卡片背景
-        C_DIVIDER  = (220, 215, 208)  # 分隔線
-        C_FOOTER   = (18,  66,  45)   # 深綠  頁尾
+        # ── 依關鍵字選色彩主題 ────────────────────────────────
+        _colors = KEYWORD_COLORS.get(keyword, _DEFAULT_COLORS)
+        C_BRAND, C_ACCENT, C_BG, C_FOOTER = _colors
+
+        # 固定色
+        C_GOLD    = (255, 185,  0)   # 金黃  星星
+        C_DARK    = (28,  28,  28)   # 近黑  標題文字
+        C_GRAY    = (110, 110, 110)  # 灰    副標
+        C_WHITE   = (255, 255, 255)
+        C_DIVIDER = (220, 215, 208)  # 分隔線
 
         # ── 區域分割 ─────────────────────────────────────────
         BRAND_H   = 80    # 頂部品牌條高度
@@ -359,9 +386,17 @@ def generate_social_card(title: str, keyword: str, price: str, rating: str,
             draw.line([(0, IMG_BOT - 60 + i), (SW, IMG_BOT - 60 + i)],
                       fill=(*C_BG, alpha))
 
-        # ── 2. 品牌頂條 ──────────────────────────────────────
+        # ── 2. 品牌頂條（顯示分類標籤）──────────────────────
         draw.rectangle([0, 0, SW, BRAND_H], fill=C_BRAND)
-        brand_txt = "Purrfectly cute   |   毛孩研究室"
+        # 左側分類標籤、右側品牌名
+        kw_icon = {
+            "貓糧":"🐱", "貓砂":"🪣", "貓零食":"🐟", "貓咪罐頭":"🥫",
+            "貓抓板":"🪵", "貓窩":"🏠", "狗糧":"🐶", "狗零食":"🦴",
+            "狗罐頭":"🥩", "狗狗牽繩":"🦮", "狗窩":"🛏",
+            "自動餵食器":"🤖", "寵物外出包":"🎒", "寵物洗毛精":"🛁",
+            "寵物保健":"💊", "梳毛刷":"🪮", "寵物飲水機":"💧",
+        }.get(keyword, "🐾")
+        brand_txt = f"毛孩研究室  |  {kw_icon} {keyword}評測"
         try:
             bw = draw.textlength(brand_txt, font=fBrand)
         except:
@@ -442,23 +477,41 @@ def generate_social_card(title: str, keyword: str, price: str, rating: str,
             draw.text(((SW - pw2) // 2, y + 10), p_txt, fill=C_WHITE, font=fMed)
             y += 88
 
-        # ── 8. CTA 標語 ───────────────────────────────────────
-        cta = "老實說！值不值得買？點連結看評測"
+        # ── 8. 分類色塊 + CTA 標語 ──────────────────────────────
+        # 分類彩色小標籤
+        kw_badge_txt = f"# {keyword}"
+        try:
+            kbw = int(draw.textlength(kw_badge_txt, font=fTiny))
+        except:
+            kbw = len(kw_badge_txt) * 14
+        kb_pad = 28
+        kb_x   = (SW - kbw - kb_pad * 2) // 2
+        try:
+            draw.rounded_rectangle([kb_x, y, kb_x + kbw + kb_pad * 2, y + 46],
+                                   radius=23, fill=C_BRAND)
+        except AttributeError:
+            draw.rectangle([kb_x, y, kb_x + kbw + kb_pad * 2, y + 46], fill=C_BRAND)
+        draw.text(((SW - kbw) // 2, y + 8), kw_badge_txt, fill=C_WHITE, font=fTiny)
+        y += 58
+
+        cta = "值不值得買？看完整評測"
         try:
             cw = draw.textlength(cta, font=fTiny)
         except:
             cw = len(cta) * 15
-        draw.text(((SW - cw) // 2, y + 6), cta, fill=C_GRAY, font=fTiny)
+        draw.text(((SW - cw) // 2, y + 4), cta, fill=C_GRAY, font=fTiny)
 
-        # ── 9. 頁尾深綠條 ─────────────────────────────────────
+        # ── 9. 頁尾條（使用分類主色）────────────────────────────
         draw.rectangle([0, FOOTER_Y, SW, SH], fill=C_FOOTER)
         footer = "完整評測  >>  a12012300-ux.github.io"
         try:
             fw = draw.textlength(footer, font=fSmall)
         except:
             fw = len(footer) * 16
+        # 頁尾文字用偏亮版本的背景色
+        footer_txt_color = tuple(min(255, c + 160) for c in C_FOOTER)
         draw.text(((SW - fw) // 2, FOOTER_Y + (FOOTER_H - 32) // 2),
-                  footer, fill=(178, 223, 199), font=fSmall)
+                  footer, fill=footer_txt_color, font=fSmall)
 
         out_path.parent.mkdir(parents=True, exist_ok=True)
         canvas.save(str(out_path), "JPEG", quality=93)
@@ -680,11 +733,12 @@ def build_article_page(src_path: Path, template: str, summary: dict) -> tuple[st
     content = inject_images(content, keyword, article_idx, product_imgs=product_imgs)
 
     # 生成社群圖文卡片（背景用商品圖）
-    # 用文章 uid（title hash 前6碼）當檔名，確保唯一且 rebuild 不會覆蓋其他文章
-    social_card_filename = f"card-{uid}.jpg"
+    # uid = title hash 前6碼，加上發佈日期，確保每天都生成新卡片
+    card_date = date_str.replace("-", "")[:8]   # e.g. "20260520"
+    social_card_filename = f"card-{uid}-{card_date}.jpg"
     social_card_path = SOCIAL_DIR / social_card_filename
     font_p = _find_cjk_font()
-    # 已存在就跳過，避免 rebuild 覆蓋已生成的卡片
+    # 同一篇文章同一天只生成一次；換天自動重新生成
     if social_card_path.exists():
         social_card_ok = True
     else:
